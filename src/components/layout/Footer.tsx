@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook } from "lucide-react";
+import cuLogo from "@/assets/CULogo.png";
 
 const footerSections = [
   {
@@ -46,6 +47,9 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container py-12">
+        <div className="mb-8 flex items-center gap-3">
+          <img src={cuLogo} alt="CU Kantine & Catering" className="h-12 brightness-0 invert" />
+        </div>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
           {footerSections.map((section) => (
             <div key={section.title}>

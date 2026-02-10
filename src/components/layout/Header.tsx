@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Mail, Clock, User, ChevronDown } from "lucide-react";
+import cuLogo from "@/assets/CULogo.png";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -79,9 +80,7 @@ export default function Header() {
       {/* Main nav */}
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-serif text-xl font-bold text-primary md:text-2xl">
-            CU Kantine & Catering
-          </span>
+          <img src={cuLogo} alt="CU Kantine & Catering" className="h-10 md:h-12" />
         </Link>
 
         {/* Desktop nav */}
