@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import Layout from "@/components/layout/Layout";
+import heroCatering from "@/assets/hero-catering.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -115,8 +116,12 @@ export default function Catering() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="bg-primary text-primary-foreground">
-        <div className="container py-16 md:py-20">
+      <section className="relative bg-primary text-primary-foreground overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroCatering} alt="Catering-Buffet im Freien" className="h-full w-full object-cover opacity-25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
+        </div>
+        <div className="container relative py-16 md:py-20">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="mb-3 font-serif text-3xl md:text-5xl">Catering-Service</h1>
             <p className="max-w-xl text-lg text-primary-foreground/80">
