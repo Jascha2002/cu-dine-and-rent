@@ -9,6 +9,7 @@ import KantineDetail from "./pages/KantineDetail";
 import Vorbestellen from "./pages/Vorbestellen";
 import Vermietung from "./pages/Vermietung";
 import Catering from "./pages/Catering";
+import UeberUns from "./pages/UeberUns";
 import Impressum from "./pages/Impressum";
 import NotFound from "./pages/NotFound";
 
@@ -27,7 +28,7 @@ const App = () => (
           <Route path="/vorbestellen" element={<Vorbestellen />} />
           <Route path="/vermietung" element={<Vermietung />} />
           <Route path="/catering" element={<Catering />} />
-          <Route path="/ueber-uns" element={<Index />} />
+          <Route path="/ueber-uns" element={<UeberUns />} />
           <Route path="/kontakt" element={<Index />} />
           <Route path="/admin" element={<Index />} />
           <Route path="/impressum" element={<Impressum />} />
