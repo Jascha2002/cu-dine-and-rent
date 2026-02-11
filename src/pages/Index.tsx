@@ -96,7 +96,7 @@ export default function Index() {
                   <Clock className="mr-2 h-4 w-4" /> Jetzt vorbestellen
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button asChild size="lg" className="bg-foreground text-background hover:bg-foreground/80">
                 <Link to="/kantinen/bzo">Speiseplan ansehen</Link>
               </Button>
             </div>
