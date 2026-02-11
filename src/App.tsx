@@ -14,6 +14,8 @@ import Impressum from "./pages/Impressum";
 import Kontakt from "./pages/Kontakt";
 import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +34,8 @@ const App = () => (
           <Route path="/catering" element={<Catering />} />
           <Route path="/ueber-uns" element={<UeberUns />} />
           <Route path="/kontakt" element={<Kontakt />} />
-          <Route path="/admin" element={<Index />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
           <Route path="/agb-vorbestellung" element={<Index />} />
