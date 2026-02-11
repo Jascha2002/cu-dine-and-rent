@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChefHat, Heart, Phone, MessageCircle } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import christianImg from "@/assets/christian-urban.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -16,22 +17,36 @@ export default function UeberUns() {
     <Layout>
       {/* Hero */}
       <section className="bg-primary text-primary-foreground">
-        <div className="container py-16 md:py-24">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 font-serif text-4xl md:text-5xl"
+        <div className="container py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16">
+          <div className="flex-1">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 font-serif text-4xl md:text-5xl"
+            >
+              Über uns
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="max-w-2xl text-lg text-primary-foreground/85"
+            >
+              Frisch. Regional. Mit Herz gekocht.
+            </motion.p>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="shrink-0"
           >
-            Über uns
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="max-w-2xl text-lg text-primary-foreground/85"
-          >
-            Frisch. Regional. Mit Herz gekocht.
-          </motion.p>
+            <img
+              src={christianImg}
+              alt="Christian Urban – Koch und Gründer von CU Kantine & Catering"
+              className="h-48 w-48 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary-foreground/20 shadow-lg"
+            />
+          </motion.div>
         </div>
       </section>
 
