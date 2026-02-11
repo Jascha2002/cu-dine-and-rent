@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
 import heroImg from "@/assets/hero-kantine.jpg";
+import heroVideo from "@/assets/hero-video.mp4";
 import kantineImg from "@/assets/card-kantine.jpg";
 import cateringImg from "@/assets/card-catering.jpg";
 import equipmentImg from "@/assets/card-equipment.jpg";
@@ -68,7 +69,15 @@ export default function Index() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Frische Gerichte in der CU Kantine" className="h-full w-full object-cover" />
+          <video
+            src={heroVideo}
+            autoPlay
+            muted
+            playsInline
+            poster={heroImg}
+            className="h-full w-full object-cover"
+            aria-hidden="true"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/40" />
         </div>
 
