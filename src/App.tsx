@@ -11,6 +11,7 @@ import Vermietung from "./pages/Vermietung";
 import Catering from "./pages/Catering";
 import UeberUns from "./pages/UeberUns";
 import Impressum from "./pages/Impressum";
+import Kontakt from "./pages/Kontakt";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,7 +30,7 @@ const App = () => (
           <Route path="/vermietung" element={<Vermietung />} />
           <Route path="/catering" element={<Catering />} />
           <Route path="/ueber-uns" element={<UeberUns />} />
-          <Route path="/kontakt" element={<Index />} />
+          <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/admin" element={<Index />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Index />} />
