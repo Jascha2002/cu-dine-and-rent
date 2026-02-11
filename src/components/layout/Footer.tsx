@@ -1,76 +1,79 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook } from "lucide-react";
 import cuLogo from "@/assets/CULogo.png";
-
-const footerSections = [
-  {
-    title: "Über CU Kantine",
-    content: (
-      <p className="text-sm leading-relaxed text-primary-foreground/70">
-        Frische Küche, fairer Preis, kurze Wege und Regionalität – das ist unser Anspruch. Seit Jahren versorgen wir
-        Gera mit gutem, gesundem Essen.
-      </p>
-    ),
-  },
-  {
-    title: "Schnelllinks",
-    links: [
-      { label: "Startseite", path: "/" },
-      { label: "Vorbestellen", path: "/vorbestellen" },
-      { label: "Catering", path: "/catering" },
-      { label: "Vermietung", path: "/vermietung" },
-      { label: "Über uns", path: "/ueber-uns" },
-      { label: "Kontakt", path: "/kontakt" },
-    ],
-  },
-  {
-    title: "Standorte",
-    links: [
-      { label: "BZO Gera/Zwötzen", path: "/kantinen/bzo" },
-      { label: "Theater Gera", path: "/kantinen/theater" },
-      { label: "AWO Gera", path: "/kantinen/awo" },
-      { label: "IHK Gera", path: "/kantinen/ihk" },
-    ],
-  },
-  {
-    title: "Service",
-    links: [
-      { label: "Mittagstisch vorbestellen", path: "/vorbestellen" },
-      { label: "Wochenkarten", path: "/kantinen/bzo" },
-      { label: "Lieblingsgerichte", path: "/kantinen/bzo#voting" },
-      { label: "Equipment mieten", path: "/vermietung" },
-    ],
-  },
-];
-
+const footerSections = [{
+  title: "Über CU Kantine",
+  content: <p className="text-sm leading-relaxed text-primary-foreground/70">Frische Küche, fairer Preis, kurze Wege und Regionalität – das ist unser Anspruch. Wir versorgen Gera mit gutem, gesundem Essen.</p>
+}, {
+  title: "Schnelllinks",
+  links: [{
+    label: "Startseite",
+    path: "/"
+  }, {
+    label: "Vorbestellen",
+    path: "/vorbestellen"
+  }, {
+    label: "Catering",
+    path: "/catering"
+  }, {
+    label: "Vermietung",
+    path: "/vermietung"
+  }, {
+    label: "Über uns",
+    path: "/ueber-uns"
+  }, {
+    label: "Kontakt",
+    path: "/kontakt"
+  }]
+}, {
+  title: "Standorte",
+  links: [{
+    label: "BZO Gera/Zwötzen",
+    path: "/kantinen/bzo"
+  }, {
+    label: "Theater Gera",
+    path: "/kantinen/theater"
+  }, {
+    label: "AWO Gera",
+    path: "/kantinen/awo"
+  }, {
+    label: "IHK Gera",
+    path: "/kantinen/ihk"
+  }]
+}, {
+  title: "Service",
+  links: [{
+    label: "Mittagstisch vorbestellen",
+    path: "/vorbestellen"
+  }, {
+    label: "Wochenkarten",
+    path: "/kantinen/bzo"
+  }, {
+    label: "Lieblingsgerichte",
+    path: "/kantinen/bzo#voting"
+  }, {
+    label: "Equipment mieten",
+    path: "/vermietung"
+  }]
+}];
 export default function Footer() {
-  return (
-    <footer className="bg-primary text-primary-foreground">
+  return <footer className="bg-primary text-primary-foreground">
       <div className="container py-12">
         <div className="mb-8 flex items-center gap-3">
           <img src={cuLogo} alt="CU Kantine & Catering" className="h-12 brightness-0 invert" />
         </div>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
-          {footerSections.map((section) => (
-            <div key={section.title}>
+          {footerSections.map(section => <div key={section.title}>
               <h4 className="mb-4 font-serif text-lg">{section.title}</h4>
               {section.content}
-              {section.links && (
-                <ul className="space-y-2">
-                  {section.links.map((link) => (
-                    <li key={link.path + link.label}>
-                      <Link
-                        to={link.path}
-                        className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                      >
+              {section.links && <ul className="space-y-2">
+                  {section.links.map(link => <li key={link.path + link.label}>
+                      <Link to={link.path} className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground">
                         {link.label}
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
+                    </li>)}
+                </ul>}
+            </div>)}
 
           {/* Contact column */}
           <div>
@@ -91,12 +94,7 @@ export default function Footer() {
                 </a>
               </li>
               <li className="pt-2">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-primary-foreground"
-                >
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary-foreground">
                   <Facebook className="h-4 w-4" /> Facebook
                 </a>
               </li>
@@ -118,6 +116,5 @@ export default function Footer() {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 }
