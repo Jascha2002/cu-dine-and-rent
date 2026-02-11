@@ -12,9 +12,14 @@ export default function Kontakt() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [honeypot, setHoneypot] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot spam check
+    if (honeypot) return;
+
     const trimmed = {
       name: form.name.trim(),
       email: form.email.trim(),
@@ -105,7 +110,21 @@ export default function Kontakt() {
           {/* Contact form */}
           <div>
             <h2 className="mb-6 font-serif text-2xl">Nachricht senden</h2>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" aria-label="Kontaktformular">
+              {/* Honeypot – hidden from real users */}
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input

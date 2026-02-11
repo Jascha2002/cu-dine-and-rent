@@ -84,7 +84,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Hauptnavigation" className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) =>
             item.children ? (
               <div
@@ -148,6 +148,8 @@ export default function Header() {
           size="icon"
           className="lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Menü schließen" : "Menü öffnen"}
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
@@ -155,7 +157,7 @@ export default function Header() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <nav className="border-t border-border bg-card px-4 py-4 lg:hidden">
+        <nav aria-label="Mobile Navigation" className="border-t border-border bg-card px-4 py-4 lg:hidden">
           {navItems.map((item) => (
             <div key={item.label}>
               <Link
