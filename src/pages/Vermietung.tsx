@@ -17,7 +17,8 @@ import zeltImg from "@/assets/rental-zelt.jpg";
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     transition: { delay: i * 0.12, duration: 0.5, ease: [0, 0, 0.2, 1] as const },
   }),
 };
@@ -25,9 +26,10 @@ const fadeUp = {
 const equipment = [
   {
     id: "feldkueche",
-    name: "Feldküche (Gulaschkanone)",
+    name: "Urbi´s Feldküche (Gulaschkanone)",
     image: feldkuecheImg,
-    description: "Mobile Großküche für Events mit bis zu 200 Personen. Ideal für Firmen-, Vereins- und Dorffeste.",
+    description:
+      "Zuverlässig und gepflegt: Urbi's mobile Großküche – perfekt für Events mit bis zu 200 Personen. Ideal für Firmenfeiern, Vereinsveranstaltungen und Dorffeste.",
     pricePerDay: 150,
     deposit: 200,
     capacity: "bis 200 Portionen",
@@ -97,7 +99,8 @@ export default function Vermietung() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="mb-3 font-serif text-3xl md:text-5xl">Equipment-Vermietung</h1>
             <p className="max-w-xl text-lg text-primary-foreground/80">
-              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zum Partyzelt. Lieferung im Raum Gera und Umgebung.
+              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zum Partyzelt. Lieferung im Raum
+              Gera und Umgebung.
             </p>
           </motion.div>
         </div>
@@ -124,13 +127,21 @@ export default function Vermietung() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
             >
-              <Card className={`group overflow-hidden transition-all hover:shadow-lg ${selected === item.id ? "ring-2 ring-primary" : "border-border/50"}`}>
+              <Card
+                className={`group overflow-hidden transition-all hover:shadow-lg ${selected === item.id ? "ring-2 ring-primary" : "border-border/50"}`}
+              >
                 <div className="relative h-56 overflow-hidden">
-                  <img src={item.image} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                     <h3 className="font-serif text-xl text-primary-foreground">{item.name}</h3>
-                    <Badge variant="secondary" className="shrink-0">ab {item.pricePerDay} €/Tag</Badge>
+                    <Badge variant="secondary" className="shrink-0">
+                      ab {item.pricePerDay} €/Tag
+                    </Badge>
                   </div>
                 </div>
                 <CardContent className="p-5">
@@ -138,21 +149,31 @@ export default function Vermietung() {
 
                   <div className="mb-4 flex flex-wrap gap-2">
                     {item.features.map((f) => (
-                      <span key={f} className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
+                      <span
+                        key={f}
+                        className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium"
+                      >
                         <Check className="h-3 w-3 text-primary" /> {f}
                       </span>
                     ))}
                   </div>
 
                   <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {item.capacity}</span>
-                    <span className="flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Kaution: {item.deposit} €</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" /> {item.capacity}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Info className="h-3.5 w-3.5" /> Kaution: {item.deposit} €
+                    </span>
                   </div>
 
                   {/* Variants */}
                   <div className="mb-4 space-y-1.5">
                     {item.variants.map((v) => (
-                      <div key={v.label} className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm">
+                      <div
+                        key={v.label}
+                        className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm"
+                      >
                         <span>{v.label}</span>
                         <span className="font-medium text-primary">{v.price} €/Tag</span>
                       </div>
@@ -163,7 +184,10 @@ export default function Vermietung() {
                     <Button
                       className="flex-1"
                       variant={selected === item.id ? "default" : "outline"}
-                      onClick={() => { setSelected(item.id); setShowForm(true); }}
+                      onClick={() => {
+                        setSelected(item.id);
+                        setShowForm(true);
+                      }}
                     >
                       Unverbindlich anfragen <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -182,7 +206,9 @@ export default function Vermietung() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl">
               <h2 className="mb-2 font-serif text-2xl md:text-3xl">Unverbindliche Anfrage</h2>
               <p className="mb-6 text-muted-foreground">
-                {selectedItem ? `Anfrage für: ${selectedItem.name}` : "Füllen Sie das Formular aus – wir melden uns schnellstmöglich."}
+                {selectedItem
+                  ? `Anfrage für: ${selectedItem.name}`
+                  : "Füllen Sie das Formular aus – wir melden uns schnellstmöglich."}
               </p>
 
               <Card>
