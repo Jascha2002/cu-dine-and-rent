@@ -26,13 +26,14 @@ export const standorte = [
   },
   {
     id: "theater",
-    name: "Theater Gera",
+    name: "Bistro Ophelia",
+    subtitle: "Theaterkantine am Theater Gera",
     address: "Theaterplatz, 07545 Gera",
     phone: "0365 / 4222241",
-    hours: "Mo–Fr 11:30–14:00 Uhr",
-    description: "Direkt am Theaterplatz – frische Küche in kulturellem Ambiente.",
+    hours: "Mo–Fr 07:30–18:00 Uhr",
+    description: 'Unsere Theaterkantine \u201eBistro Ophelia\u201c \u2013 frische K\u00fcche in kulturellem Ambiente. Reservierungen f\u00fcr den Abend gern per Mail an: bistro-ophelia@cu-kantine.de',
     highlight: false,
-    features: ["Tagesmenü", "Salat-Bar"],
+    features: ["Wechselnder Speiseplan", "Snack-Karte", "Abendreservierung"],
   },
   {
     id: "awo",

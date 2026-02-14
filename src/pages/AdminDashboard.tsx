@@ -34,12 +34,13 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
 }
 
 const menuItems = [
-  { icon: CalendarDays, label: "Wochenkarten", description: "Speisekarten erstellen & verwalten" },
-  { icon: ClipboardList, label: "Vorbestellungen", description: "Tagesübersicht & Küchenliste" },
-  { icon: Truck, label: "Vermietung", description: "Buchungen & Anfragen" },
-  { icon: MessageSquare, label: "Kontaktanfragen", description: "Eingegangene Nachrichten" },
-  { icon: Users, label: "Voting", description: "Lieblingsgerichte-Umfrage" },
-  { icon: Settings, label: "Einstellungen", description: "Bestellschluss, Kontingente" },
+  { icon: CalendarDays, label: "Wochenkarten", description: "Speisekarten erstellen & verwalten", path: "" },
+  { icon: ClipboardList, label: "Vorbestellungen", description: "Tagesübersicht & Küchenliste", path: "" },
+  { icon: Truck, label: "Vermietung", description: "Buchungen & Anfragen", path: "" },
+  { icon: MessageSquare, label: "Kontaktanfragen", description: "Eingegangene Nachrichten", path: "" },
+  { icon: Users, label: "Stellenanzeigen", description: "Jobs verwalten & Bewerbungen", path: "/admin/jobs" },
+  { icon: UtensilsCrossed, label: "Bistro Ophelia Menüs", description: "Speiseplan & Snack-Karte hochladen", path: "/admin/menu-upload" },
+  { icon: Settings, label: "Einstellungen", description: "Bestellschluss, Kontingente", path: "" },
 ];
 
 export default function AdminDashboard() {
@@ -129,7 +130,8 @@ export default function AdminDashboard() {
             {menuItems.map((item) => (
               <Card
                 key={item.label}
-                className="cursor-pointer transition-shadow hover:shadow-md"
+                className={`transition-shadow hover:shadow-md ${item.path ? "cursor-pointer" : "cursor-default opacity-60"}`}
+                onClick={() => item.path && navigate(item.path)}
               >
                 <CardHeader className="flex flex-row items-center gap-3 pb-2">
                   <item.icon className="h-5 w-5 text-primary" />

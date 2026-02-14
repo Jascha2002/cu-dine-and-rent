@@ -22,6 +22,9 @@ const footerSections = [{
     label: "Über uns",
     path: "/ueber-uns"
   }, {
+    label: "Jobs",
+    path: "/jobs"
+  }, {
     label: "Kontakt",
     path: "/kontakt"
   }]
@@ -31,7 +34,7 @@ const footerSections = [{
     label: "BZO Gera/Zwötzen",
     path: "/kantinen/bzo"
   }, {
-    label: "Theater Gera",
+    label: "Bistro Ophelia",
     path: "/kantinen/theater"
   }, {
     label: "AWO Gera",

@@ -16,6 +16,9 @@ import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import Jobs from "./pages/Jobs";
+import AdminJobs from "./pages/AdminJobs";
+import AdminMenuUpload from "./pages/AdminMenuUpload";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,9 @@ const App = () => (
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/jobs" element={<AdminJobs />} />
+          <Route path="/admin/menu-upload" element={<AdminMenuUpload />} />
+          <Route path="/jobs" element={<Jobs />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
           <Route path="/agb-vorbestellung" element={<Index />} />
