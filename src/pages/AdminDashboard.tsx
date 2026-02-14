@@ -34,7 +34,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
 }
 
 const menuItems = [
-  { icon: CalendarDays, label: "Wochenkarten", description: "Speisekarten erstellen & verwalten", path: "" },
+  { icon: CalendarDays, label: "Wochenkarten", description: "Speisekarten erstellen & verwalten", path: "/admin/weekly-menus" },
   { icon: ClipboardList, label: "Vorbestellungen", description: "Tagesübersicht & Küchenliste", path: "" },
   { icon: Truck, label: "Vermietung", description: "Buchungen & Anfragen", path: "" },
   { icon: MessageSquare, label: "Kontaktanfragen", description: "Eingegangene Nachrichten", path: "" },
