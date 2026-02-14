@@ -1,27 +1,26 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Phone, ArrowLeft, Download, ThumbsUp, Mail, FileText } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowLeft, Download, ThumbsUp, Mail, FileText, CalendarDays, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Layout from "@/components/layout/Layout";
 import { standorte } from "./Kantinen";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-// Demo weekly menu
-const demoMenu: Record<string, { menu1: string; menu2: string; veg: string; suppe: string; dessert: string; allergene?: string }> = {
-  Montag: { menu1: "Schnitzel mit Kartoffelsalat", menu2: "Gulasch mit Klößen", veg: "Gemüselasagne", suppe: "Tomatensuppe", dessert: "Pudding", allergene: "A, C, G" },
-  Dienstag: { menu1: "Hähnchenbrust mit Reis", menu2: "Rinderroulade mit Rotkohl", veg: "Spinat-Ricotta-Cannelloni", suppe: "Kartoffelsuppe", dessert: "Obstsalat", allergene: "A, G" },
-  Mittwoch: { menu1: "Bratwurst mit Sauerkraut", menu2: "Fischfilet mit Petersilienkartoffeln", veg: "Thai-Gemüsecurry", suppe: "Linsensuppe", dessert: "Milchreis", allergene: "A, D, G" },
-  Donnerstag: { menu1: "Schweinebraten mit Knödeln", menu2: "Putengeschnetzeltes", veg: "Falafel-Bowl", suppe: "Brokkolicremesuppe", dessert: "Quarkspeise", allergene: "A, G" },
-  Freitag: { menu1: "Nudeln Bolognese", menu2: "Backfisch mit Remoulade", veg: "Gemüse-Quiche", suppe: "Minestrone", dessert: "Kuchen", allergene: "A, C, D, G" },
-};
+import { getISOWeek, getYear, startOfISOWeek, addDays, format } from "date-fns";
+import { de } from "date-fns/locale";
 
 const kategorien = ["Fleisch", "Fisch", "Vegetarisch", "Vegan", "Suppe", "Dessert", "Salat"];
+const CATEGORY_LABELS: Record<string, string> = {
+  menu1: "Menü 1", menu2: "Menü 2", vegetarisch: "Vegetarisch", suppe: "Tagessuppe", dessert: "Dessert",
+};
+const CATEGORY_ORDER = ["menu1", "menu2", "vegetarisch", "suppe", "dessert"];
+const DAY_NAMES = ["Montag", "Dienstag", "Mittwoch", "Donnerstag"];
 
 // Simulated favorites
 const initialFavorites = [
@@ -37,12 +36,14 @@ const initialFavorites = [
   { name: "Quarkspeise", votes: 8, category: "Dessert" },
 ];
 
+type DishImage = { id: string; name: string; image_url: string };
+type MenuItem = {
+  id: string; day_of_week: number; category: string; name: string;
+  description: string; price: number; dish_image_id: string | null; is_active: boolean;
+};
+
 function getKW() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now.getTime() - start.getTime() + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60000);
-  const oneWeek = 604800000;
-  return Math.ceil((diff / oneWeek + start.getDay() / 7));
+  return getISOWeek(new Date());
 }
 
 function BistroOpheliaMenus() {
@@ -100,6 +101,182 @@ function BistroOpheliaMenus() {
             </CardContent>
           </Card>
         )}
+      </div>
+    </section>
+  );
+}
+
+function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [dishImages, setDishImages] = useState<DishImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [weekNumber, setWeekNumber] = useState(0);
+  const [year, setYear] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      const now = new Date();
+      const currentWeek = getISOWeek(now);
+      const currentYear = getYear(now);
+
+      // Find published menu for current week
+      const { data: menu } = await supabase
+        .from("weekly_menus")
+        .select("id, week_number, year")
+        .eq("is_published", true)
+        .eq("week_number", currentWeek)
+        .eq("year", currentYear)
+        .maybeSingle();
+
+      if (!menu) {
+        setLoading(false);
+        return;
+      }
+
+      setWeekNumber(menu.week_number);
+      setYear(menu.year);
+
+      const [itemsRes, imagesRes] = await Promise.all([
+        supabase.from("daily_menu_items").select("*").eq("weekly_menu_id", menu.id).eq("is_active", true),
+        supabase.from("dish_images").select("id, name, image_url"),
+      ]);
+
+      setMenuItems((itemsRes.data || []).map(d => ({
+        id: d.id, day_of_week: d.day_of_week, category: d.category, name: d.name,
+        description: d.description || "", price: Number(d.price), dish_image_id: d.dish_image_id,
+        is_active: d.is_active,
+      })));
+      setDishImages(imagesRes.data || []);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const groupedByDay = useMemo(() => {
+    const days: Record<number, MenuItem[]> = {};
+    for (const item of menuItems) {
+      if (!days[item.day_of_week]) days[item.day_of_week] = [];
+      days[item.day_of_week].push(item);
+    }
+    // Sort items within each day by category order
+    for (const day in days) {
+      days[day].sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
+    }
+    return days;
+  }, [menuItems]);
+
+  if (loading) {
+    return (
+      <section id="wochenkarte" className="mb-14">
+        <h2 className="mb-6 font-serif text-2xl md:text-3xl">Wochenkarte</h2>
+        <p className="text-muted-foreground">Laden…</p>
+      </section>
+    );
+  }
+
+  if (menuItems.length === 0) {
+    return (
+      <section id="wochenkarte" className="mb-14">
+        <h2 className="mb-6 font-serif text-2xl md:text-3xl">Wochenkarte</h2>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-10">
+            <CalendarDays className="h-10 w-10 text-muted-foreground" />
+            <p className="text-muted-foreground">Für diese Woche ist noch keine Speisekarte verfügbar.</p>
+            <Link to="/vorbestellen">
+              <Button variant="outline" size="sm">Vorbestellungen prüfen</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section id="wochenkarte" className="mb-14">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-serif text-2xl md:text-3xl">Wochenkarte – KW {weekNumber}</h2>
+        <Link to="/vorbestellen">
+          <Button size="sm" className="gap-1">Jetzt vorbestellen</Button>
+        </Link>
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block">
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-28">Tag</TableHead>
+                {CATEGORY_ORDER.map(cat => (
+                  <TableHead key={cat}>{CATEGORY_LABELS[cat]}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[0, 1, 2, 3].map(dayIdx => {
+                const items = groupedByDay[dayIdx] || [];
+                if (items.length === 0) return null;
+                return (
+                  <TableRow key={dayIdx}>
+                    <TableCell className="font-medium">{DAY_NAMES[dayIdx]}</TableCell>
+                    {CATEGORY_ORDER.map(cat => {
+                      const item = items.find(i => i.category === cat);
+                      return (
+                        <TableCell key={cat}>
+                          {item ? (
+                            <div>
+                              <span>{item.name}</span>
+                              {item.price > 0 && (
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                  ({item.price.toFixed(2).replace(".", ",")} €)
+                                </span>
+                              )}
+                            </div>
+                          ) : "–"}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+        <p className="mt-2 text-xs text-muted-foreground">Änderungen vorbehalten.</p>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="space-y-4 md:hidden">
+        {[0, 1, 2, 3].map(dayIdx => {
+          const items = groupedByDay[dayIdx] || [];
+          if (items.length === 0) return null;
+          return (
+            <Card key={dayIdx}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">{DAY_NAMES[dayIdx]}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {items.map(item => {
+                  const img = dishImages.find(di => di.id === item.dish_image_id);
+                  return (
+                    <div key={item.id} className="flex items-center gap-3">
+                      {img && <img src={img.image_url} alt={img.name} className="h-12 w-12 rounded object-cover" />}
+                      <div className="flex-1">
+                        <span className="font-medium text-primary">{CATEGORY_LABELS[item.category]}:</span>{" "}
+                        {item.name}
+                        {item.price > 0 && (
+                          <span className="ml-1 text-muted-foreground">
+                            ({item.price.toFixed(2).replace(".", ",")} €)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );
@@ -185,125 +362,65 @@ export default function KantineDetail() {
         {/* Bistro Ophelia menu downloads */}
         {id === "theater" && <BistroOpheliaMenus />}
 
-        {/* Weekly menu */}
-        <section id="wochenkarte" className="mb-14">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-serif text-2xl md:text-3xl">Wochenkarte – KW {getKW()}</h2>
-            <Button variant="outline" size="sm" className="gap-1"><Download className="h-4 w-4" /> PDF Export</Button>
-          </div>
+        {/* Weekly menu from DB (only for BZO) */}
+        {id === "bzo" && <WeeklyMenuFromDB kantineId="bzo" />}
 
-          {/* Desktop table */}
-          <div className="hidden md:block">
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-28">Tag</TableHead>
-                    <TableHead>Menü 1 (6,50 €)</TableHead>
-                    <TableHead>Menü 2 (6,50 €)</TableHead>
-                    <TableHead>Vegetarisch (6,50 €)</TableHead>
-                    <TableHead>Suppe (2,50 €)</TableHead>
-                    <TableHead>Dessert</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Object.entries(demoMenu).map(([tag, m]) => (
-                    <TableRow key={tag}>
-                      <TableCell className="font-medium">{tag}</TableCell>
-                      <TableCell>{m.menu1}</TableCell>
-                      <TableCell>{m.menu2}</TableCell>
-                      <TableCell>{m.veg}</TableCell>
-                      <TableCell>{m.suppe}</TableCell>
-                      <TableCell>{m.dessert}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-            <p className="mt-2 text-xs text-muted-foreground">Allergene: A = Gluten, C = Eier, D = Fisch, G = Milch. Änderungen vorbehalten.</p>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="space-y-4 md:hidden">
-            {Object.entries(demoMenu).map(([tag, m]) => (
-              <Card key={tag}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{tag}</CardTitle>
+        {/* Favorite dishes voting (only for BZO) */}
+        {id === "bzo" && (
+          <section id="voting">
+            <h2 className="mb-6 font-serif text-2xl md:text-3xl">Lieblingsgerichte</h2>
+            <div className="grid gap-8 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Stimme für dein Lieblingsgericht</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div><span className="font-medium text-primary">Menü 1:</span> {m.menu1} <span className="text-muted-foreground">(6,50 €)</span></div>
-                  <div><span className="font-medium text-primary">Menü 2:</span> {m.menu2} <span className="text-muted-foreground">(6,50 €)</span></div>
-                  <div><span className="font-medium text-primary">Veggie:</span> {m.veg} <span className="text-muted-foreground">(6,50 €)</span></div>
-                  <div><span className="font-medium text-primary">Suppe:</span> {m.suppe} <span className="text-muted-foreground">(2,50 €)</span></div>
-                  <div><span className="font-medium text-primary">Dessert:</span> {m.dessert}</div>
-                  {m.allergene && <p className="text-xs text-muted-foreground">Allergene: {m.allergene}</p>}
+                <CardContent>
+                  {hasVoted ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <ThumbsUp className="h-5 w-5 text-accent" /> Danke für deine Stimme! Du kannst einmal pro Gerät abstimmen.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Input placeholder="Name des Gerichts…" value={newDish} onChange={(e) => setNewDish(e.target.value)} maxLength={100} />
+                      <Select value={newCategory} onValueChange={setNewCategory}>
+                        <SelectTrigger><SelectValue placeholder="Kategorie wählen" /></SelectTrigger>
+                        <SelectContent>
+                          {kategorien.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={handleVote} disabled={!newDish.trim() || !newCategory} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                        Abstimmen
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </section>
 
-        {/* Favorite dishes voting */}
-        <section id="voting">
-          <h2 className="mb-6 font-serif text-2xl md:text-3xl">Lieblingsgerichte</h2>
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Voting form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Stimme für dein Lieblingsgericht</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {hasVoted ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ThumbsUp className="h-5 w-5 text-accent" /> Danke für deine Stimme! Du kannst einmal pro Gerät abstimmen.
-                  </div>
-                ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Top 10 Lieblingsgerichte</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-3">
-                    <Input
-                      placeholder="Name des Gerichts…"
-                      value={newDish}
-                      onChange={(e) => setNewDish(e.target.value)}
-                      maxLength={100}
-                    />
-                    <Select value={newCategory} onValueChange={setNewCategory}>
-                      <SelectTrigger><SelectValue placeholder="Kategorie wählen" /></SelectTrigger>
-                      <SelectContent>
-                        {kategorien.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={handleVote} disabled={!newDish.trim() || !newCategory} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                      Abstimmen
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Top 10 ranking */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Top 10 Lieblingsgerichte</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {favorites.map((f, i) => (
-                    <div key={f.name} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>
-                          <span className="mr-2 font-semibold text-primary">{i + 1}.</span>
-                          {f.name}
-                          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{f.category}</span>
-                        </span>
-                        <span className="text-xs font-medium text-muted-foreground">{f.votes} Stimmen</span>
+                    {favorites.map((f, i) => (
+                      <div key={f.name} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>
+                            <span className="mr-2 font-semibold text-primary">{i + 1}.</span>
+                            {f.name}
+                            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{f.category}</span>
+                          </span>
+                          <span className="text-xs font-medium text-muted-foreground">{f.votes} Stimmen</span>
+                        </div>
+                        <Progress value={(f.votes / maxVotes) * 100} className="h-2" />
                       </div>
-                      <Progress value={(f.votes / maxVotes) * 100} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
       </div>
     </Layout>
   );
