@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Phone, ArrowLeft, Download, ThumbsUp } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowLeft, Download, ThumbsUp, Mail, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import Layout from "@/components/layout/Layout";
 import { standorte } from "./Kantinen";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Demo weekly menu
 const demoMenu: Record<string, { menu1: string; menu2: string; veg: string; suppe: string; dessert: string; allergene?: string }> = {
@@ -42,6 +43,66 @@ function getKW() {
   const diff = now.getTime() - start.getTime() + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60000);
   const oneWeek = 604800000;
   return Math.ceil((diff / oneWeek + start.getDay() / 7));
+}
+
+function BistroOpheliaMenus() {
+  const [speiseplanUrl, setSpeiseplanUrl] = useState<string | null>(null);
+  const [snackkarteUrl, setSnackkarteUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: files } = await supabase.storage.from("menus").list("bistro-ophelia");
+      if (files) {
+        if (files.find((f) => f.name === "speiseplan")) {
+          const { data } = supabase.storage.from("menus").getPublicUrl("bistro-ophelia/speiseplan");
+          setSpeiseplanUrl(data.publicUrl);
+        }
+        if (files.find((f) => f.name === "snackkarte")) {
+          const { data } = supabase.storage.from("menus").getPublicUrl("bistro-ophelia/snackkarte");
+          setSnackkarteUrl(data.publicUrl);
+        }
+      }
+    };
+    load();
+  }, []);
+
+  if (!speiseplanUrl && !snackkarteUrl) return null;
+
+  return (
+    <section className="mb-14">
+      <h2 className="mb-6 font-serif text-2xl md:text-3xl">Speisekarten</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {speiseplanUrl && (
+          <Card>
+            <CardContent className="flex items-center gap-4 p-6">
+              <FileText className="h-10 w-10 shrink-0 text-primary" />
+              <div className="flex-1">
+                <h3 className="font-semibold">Wechselnder Speiseplan</h3>
+                <p className="text-sm text-muted-foreground">Aktuelle Wochenkarte</p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <a href={speiseplanUrl} target="_blank" rel="noopener noreferrer">Anzeigen</a>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {snackkarteUrl && (
+          <Card>
+            <CardContent className="flex items-center gap-4 p-6">
+              <FileText className="h-10 w-10 shrink-0 text-accent" />
+              <div className="flex-1">
+                <h3 className="font-semibold">Snack-Karte</h3>
+                <p className="text-sm text-muted-foreground">Snacks & Getränke</p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <a href={snackkarteUrl} target="_blank" rel="noopener noreferrer">Anzeigen</a>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default function KantineDetail() {
@@ -99,10 +160,18 @@ export default function KantineDetail() {
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-3 font-serif text-3xl md:text-4xl">
             {standort.name}
           </motion.h1>
+          {(standort as any).subtitle && (
+            <p className="mb-2 text-sm text-primary-foreground/70">{(standort as any).subtitle}</p>
+          )}
           <div className="flex flex-wrap gap-4 text-sm text-primary-foreground/80">
             <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {standort.address}</span>
             <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {standort.hours}</span>
             <span className="flex items-center gap-1"><Phone className="h-4 w-4" /> {standort.phone}</span>
+            {id === "theater" && (
+              <a href="mailto:bistro-ophelia@cu-kantine.de" className="flex items-center gap-1 hover:text-primary-foreground">
+                <Mail className="h-4 w-4" /> bistro-ophelia@cu-kantine.de
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -112,6 +181,9 @@ export default function KantineDetail() {
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-10 max-w-2xl text-muted-foreground">
           {standort.description}
         </motion.p>
+
+        {/* Bistro Ophelia menu downloads */}
+        {id === "theater" && <BistroOpheliaMenus />}
 
         {/* Weekly menu */}
         <section id="wochenkarte" className="mb-14">

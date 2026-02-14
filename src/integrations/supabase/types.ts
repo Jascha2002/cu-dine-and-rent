@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      job_applications: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          job_id: string
+          message: string | null
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          job_id: string
+          message?: string | null
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          benefits: string | null
+          created_at: string
+          description: string
+          employment_type: string
+          id: string
+          is_active: boolean
+          location: string
+          requirements: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          benefits?: string | null
+          created_at?: string
+          description?: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location: string
+          requirements?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          benefits?: string | null
+          created_at?: string
+          description?: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string
+          requirements?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

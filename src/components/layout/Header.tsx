@@ -12,7 +12,7 @@ const navItems = [
     children: [
       { label: "Alle Standorte", path: "/kantinen" },
       { label: "BZO Gera/Zwötzen", path: "/kantinen/bzo" },
-      { label: "Theater Gera", path: "/kantinen/theater" },
+      { label: "Bistro Ophelia", path: "/kantinen/theater" },
       { label: "AWO Gera", path: "/kantinen/awo" },
       { label: "IHK Gera", path: "/kantinen/ihk" },
     ],
@@ -21,6 +21,7 @@ const navItems = [
   { label: "Vermietung", path: "/vermietung" },
   { label: "Catering", path: "/catering" },
   { label: "Über uns", path: "/ueber-uns" },
+  { label: "Jobs", path: "/jobs" },
   { label: "Kontakt", path: "/kontakt" },
 ];
 
