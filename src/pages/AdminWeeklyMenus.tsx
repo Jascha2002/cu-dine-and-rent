@@ -182,22 +182,29 @@ export default function AdminWeeklyMenus() {
   const saveAll = async () => {
     if (!selectedMenu) return;
     setSaving(true);
-    try {
-      for (const item of menuItems) {
-        const payload = {
-          weekly_menu_id: selectedMenu.id, day_of_week: item.day_of_week, category: item.category,
-          name: item.name, description: item.description, price: item.price,
-          dish_image_id: item.dish_image_id, is_active: item.is_active, max_quantity: item.max_quantity,
-        };
-        if (item.id) {
-          await supabase.from("daily_menu_items").update(payload).eq("id", item.id);
-        } else {
-          const { data } = await supabase.from("daily_menu_items").insert(payload).select().single();
-          if (data) item.id = data.id;
-        }
+    let errors = 0;
+    let saved = 0;
+    const updatedItems = [...menuItems];
+    for (let idx = 0; idx < updatedItems.length; idx++) {
+      const item = updatedItems[idx];
+      if (!item.name.trim()) continue;
+      const payload = {
+        weekly_menu_id: selectedMenu.id, day_of_week: item.day_of_week, category: item.category,
+        name: item.name, description: item.description, price: item.price,
+        dish_image_id: item.dish_image_id, is_active: item.is_active, max_quantity: item.max_quantity,
+      };
+      if (item.id) {
+        const { error } = await supabase.from("daily_menu_items").update(payload).eq("id", item.id);
+        if (error) { console.error("Update error:", error); errors++; } else saved++;
+      } else {
+        const { data, error } = await supabase.from("daily_menu_items").insert(payload).select().single();
+        if (error) { console.error("Insert error:", error); errors++; }
+        else if (data) { updatedItems[idx] = { ...item, id: data.id }; saved++; }
       }
-      toast.success("Gespeichert!");
-    } catch { toast.error("Fehler beim Speichern"); }
+    }
+    setMenuItems(updatedItems);
+    if (errors > 0) toast.error(`${errors} Fehler beim Speichern. ${saved} Einträge gespeichert.`);
+    else toast.success(`${saved} Einträge gespeichert!`);
     setSaving(false);
   };
 
