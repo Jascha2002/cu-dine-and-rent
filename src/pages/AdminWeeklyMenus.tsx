@@ -24,6 +24,7 @@ const CATEGORIES = [
 
 type DishImage = { id: string; name: string; image_url: string; tags: string[] };
 type MenuDish = { id: string; name: string; category: string; default_price: number; dish_image_id: string | null };
+type MenuDishImage = { id: string; menu_dish_id: string; dish_image_id: string };
 type MenuItem = {
   id?: string;
   day_of_week: number;
@@ -66,6 +67,7 @@ export default function AdminWeeklyMenus() {
   const [loading, setLoading] = useState(true);
   const [dishImages, setDishImages] = useState<DishImage[]>([]);
   const [menuDishes, setMenuDishes] = useState<MenuDish[]>([]);
+  const [menuDishImages, setMenuDishImages] = useState<MenuDishImage[]>([]);
   const [weeklyMenus, setWeeklyMenus] = useState<WeeklyMenu[]>([]);
   const [selectedMenu, setSelectedMenu] = useState<WeeklyMenu | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -77,6 +79,7 @@ export default function AdminWeeklyMenus() {
   const [activeDay, setActiveDay] = useState("0");
   const [dishSearch, setDishSearch] = useState("");
   const [newWeekCount, setNewWeekCount] = useState(1);
+  const [assignImageDish, setAssignImageDish] = useState<MenuDish | null>(null);
 
   // Auth check
   useEffect(() => {
@@ -91,14 +94,16 @@ export default function AdminWeeklyMenus() {
   }, [navigate]);
 
   const loadData = useCallback(async () => {
-    const [imgRes, menuRes, dishRes] = await Promise.all([
+    const [imgRes, menuRes, dishRes, dishImgLinksRes] = await Promise.all([
       supabase.from("dish_images").select("*").order("name"),
       supabase.from("weekly_menus").select("*").order("year", { ascending: false }).order("week_number", { ascending: false }).limit(20),
       supabase.from("menu_dishes").select("*").eq("is_active", true).order("name"),
+      supabase.from("menu_dish_images").select("*"),
     ]);
     setDishImages(imgRes.data || []);
     setWeeklyMenus(menuRes.data || []);
     setMenuDishes(dishRes.data || []);
+    setMenuDishImages((dishImgLinksRes.data as MenuDishImage[]) || []);
   }, []);
 
   useEffect(() => { if (!loading) loadData(); }, [loading, loadData]);
@@ -399,20 +404,98 @@ export default function AdminWeeklyMenus() {
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {menuDishes.map(d => {
-                  const img = dishImages.find(di => di.id === d.dish_image_id);
+                  const linkedImgIds = menuDishImages.filter(l => l.menu_dish_id === d.id).map(l => l.dish_image_id);
+                  const linkedImgs = dishImages.filter(di => linkedImgIds.includes(di.id));
+                  // Also show legacy single image
+                  const legacyImg = d.dish_image_id && !linkedImgIds.includes(d.dish_image_id) ? dishImages.find(di => di.id === d.dish_image_id) : null;
+                  const allImgs = legacyImg ? [legacyImg, ...linkedImgs] : linkedImgs;
                   const catLabel = CATEGORIES.find(c => c.value === d.category)?.label || d.category;
                   return (
-                    <Card key={d.id} className="flex items-center gap-3 p-3">
-                      {img ? <img src={img.image_url} alt={img.name} className="h-14 w-14 rounded-md object-cover flex-shrink-0" />
-                        : <div className="h-14 w-14 rounded-md bg-muted flex items-center justify-center flex-shrink-0"><ImageIcon className="h-6 w-6 text-muted-foreground" /></div>}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{d.name}</p>
-                        <p className="text-xs text-muted-foreground">{catLabel} · {d.default_price.toFixed(2)} €</p>
+                    <Card key={d.id} className="p-3 space-y-2">
+                      <div className="flex items-center gap-3">
+                        {allImgs.length > 0 ? (
+                          <div className="flex gap-1 flex-shrink-0">
+                            {allImgs.slice(0, 3).map(img => (
+                              <img key={img.id} src={img.image_url} alt={img.name} className="h-14 w-14 rounded-md object-cover" />
+                            ))}
+                            {allImgs.length > 3 && <div className="h-14 w-14 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">+{allImgs.length - 3}</div>}
+                          </div>
+                        ) : (
+                          <div className="h-14 w-14 rounded-md bg-muted flex items-center justify-center flex-shrink-0"><ImageIcon className="h-6 w-6 text-muted-foreground" /></div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">{catLabel} · {d.default_price.toFixed(2)} €</p>
+                        </div>
                       </div>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => setAssignImageDish(d)}>
+                        <ImageIcon className="mr-1 h-3 w-3" /> Bilder verwalten ({allImgs.length})
+                      </Button>
                     </Card>
                   );
                 })}
               </div>
+
+              {/* Image assignment dialog */}
+              <Dialog open={!!assignImageDish} onOpenChange={open => { if (!open) setAssignImageDish(null); }}>
+                <DialogContent className="max-h-[80vh] overflow-y-auto max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Bilder – {assignImageDish?.name}</DialogTitle>
+                  </DialogHeader>
+                  {assignImageDish && (() => {
+                    const dishId = assignImageDish.id;
+                    const linkedIds = menuDishImages.filter(l => l.menu_dish_id === dishId).map(l => l.dish_image_id);
+                    const linked = dishImages.filter(di => linkedIds.includes(di.id));
+                    const available = dishImages.filter(di => !linkedIds.includes(di.id));
+
+                    const addLink = async (imgId: string) => {
+                      const { data, error } = await supabase.from("menu_dish_images").insert({ menu_dish_id: dishId, dish_image_id: imgId }).select().single();
+                      if (error) { toast.error("Fehler beim Zuordnen"); return; }
+                      setMenuDishImages(prev => [...prev, data as MenuDishImage]);
+                      toast.success("Bild zugeordnet");
+                    };
+
+                    const removeLink = async (imgId: string) => {
+                      await supabase.from("menu_dish_images").delete().eq("menu_dish_id", dishId).eq("dish_image_id", imgId);
+                      setMenuDishImages(prev => prev.filter(l => !(l.menu_dish_id === dishId && l.dish_image_id === imgId)));
+                      toast.success("Bild entfernt");
+                    };
+
+                    return (
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-semibold mb-2">Zugeordnete Bilder ({linked.length})</h3>
+                          {linked.length === 0 && <p className="text-sm text-muted-foreground">Keine Bilder zugeordnet</p>}
+                          <div className="grid grid-cols-3 gap-2">
+                            {linked.map(img => (
+                              <div key={img.id} className="relative group">
+                                <img src={img.image_url} alt={img.name} className="aspect-square w-full rounded-md object-cover" />
+                                <button onClick={() => removeLink(img.id)}
+                                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                                <p className="text-xs truncate mt-1">{img.name}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold mb-2">Verfügbare Bilder</h3>
+                          <div className="grid grid-cols-3 gap-2">
+                            {available.map(img => (
+                              <button key={img.id} onClick={() => addLink(img.id)} className="text-left group">
+                                <img src={img.image_url} alt={img.name} className="aspect-square w-full rounded-md object-cover opacity-60 group-hover:opacity-100 transition-opacity ring-2 ring-transparent group-hover:ring-primary" />
+                                <p className="text-xs truncate mt-1">{img.name}</p>
+                              </button>
+                            ))}
+                            {available.length === 0 && <p className="text-sm text-muted-foreground col-span-3">Alle Bilder bereits zugeordnet</p>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </DialogContent>
+              </Dialog>
             </TabsContent>
 
             {/* === IMAGES TAB === */}
