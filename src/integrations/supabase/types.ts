@@ -172,6 +172,44 @@ export type Database = {
         }
         Relationships: []
       }
+      menu_dishes: {
+        Row: {
+          category: string
+          created_at: string
+          default_price: number
+          dish_image_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          dish_image_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          dish_image_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_dishes_dish_image_id_fkey"
+            columns: ["dish_image_id"]
+            isOneToOne: false
+            referencedRelation: "dish_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       preorder_items: {
         Row: {
           created_at: string
