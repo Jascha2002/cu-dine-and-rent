@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Jobs from "./pages/Jobs";
 import AdminJobs from "./pages/AdminJobs";
 import AdminMenuUpload from "./pages/AdminMenuUpload";
+import AdminWeeklyMenus from "./pages/AdminWeeklyMenus";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/jobs" element={<AdminJobs />} />
           <Route path="/admin/menu-upload" element={<AdminMenuUpload />} />
+          <Route path="/admin/weekly-menus" element={<AdminWeeklyMenus />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />

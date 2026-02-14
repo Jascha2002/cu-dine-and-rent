@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_menu_items: {
+        Row: {
+          category: string
+          created_at: string
+          day_of_week: number
+          description: string | null
+          dish_image_id: string | null
+          id: string
+          is_active: boolean
+          max_quantity: number | null
+          name: string
+          price: number
+          weekly_menu_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          day_of_week: number
+          description?: string | null
+          dish_image_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          name: string
+          price: number
+          weekly_menu_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          day_of_week?: number
+          description?: string | null
+          dish_image_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          name?: string
+          price?: number
+          weekly_menu_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_menu_items_dish_image_id_fkey"
+            columns: ["dish_image_id"]
+            isOneToOne: false
+            referencedRelation: "dish_images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_menu_items_weekly_menu_id_fkey"
+            columns: ["weekly_menu_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dish_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          tags: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          tags?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           created_at: string
@@ -91,6 +172,87 @@ export type Database = {
         }
         Relationships: []
       }
+      preorder_items: {
+        Row: {
+          created_at: string
+          daily_menu_item_id: string
+          id: string
+          order_date: string
+          preorder_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          daily_menu_item_id: string
+          id?: string
+          order_date: string
+          preorder_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          daily_menu_item_id?: string
+          id?: string
+          order_date?: string
+          preorder_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preorder_items_daily_menu_item_id_fkey"
+            columns: ["daily_menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "daily_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preorder_items_preorder_id_fkey"
+            columns: ["preorder_id"]
+            isOneToOne: false
+            referencedRelation: "preorders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preorders: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          payment_method: string
+          payment_status: string
+          status: string
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          payment_method?: string
+          payment_status?: string
+          status?: string
+          total_amount?: number
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          payment_method?: string
+          payment_status?: string
+          status?: string
+          total_amount?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -133,6 +295,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_menus: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean
+          updated_at: string
+          week_number: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          updated_at?: string
+          week_number: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          updated_at?: string
+          week_number?: number
+          year?: number
         }
         Relationships: []
       }
