@@ -14,6 +14,8 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getISOWeek, getYear, startOfISOWeek, addDays, format } from "date-fns";
 import { de } from "date-fns/locale";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const kategorien = ["Fleisch", "Fisch", "Vegetarisch", "Vegan", "Suppe", "Dessert", "Salat"];
 const CATEGORY_LABELS: Record<string, string> = {
@@ -22,7 +24,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 const CATEGORY_ORDER = ["menu1", "menu2", "vegetarisch", "suppe", "dessert"];
 const DAY_NAMES = ["Montag", "Dienstag", "Mittwoch", "Donnerstag"];
 
-// Simulated favorites
 const initialFavorites = [
   { name: "Schnitzel mit Kartoffelsalat", votes: 42, category: "Fleisch" },
   { name: "Gemüselasagne", votes: 35, category: "Vegetarisch" },
@@ -119,7 +120,6 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
       const currentWeek = getISOWeek(now);
       const currentYear = getYear(now);
 
-      // Find published menu for current week
       const { data: menu } = await supabase
         .from("weekly_menus")
         .select("id, week_number, year")
@@ -152,18 +152,60 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
     load();
   }, []);
 
+  // Deduplicate: each dish name appears only once per day
   const groupedByDay = useMemo(() => {
     const days: Record<number, MenuItem[]> = {};
     for (const item of menuItems) {
       if (!days[item.day_of_week]) days[item.day_of_week] = [];
-      days[item.day_of_week].push(item);
+      // Prevent duplicate dish names per day
+      const alreadyExists = days[item.day_of_week].some(
+        existing => existing.name === item.name && existing.category === item.category
+      );
+      if (!alreadyExists) {
+        days[item.day_of_week].push(item);
+      }
     }
-    // Sort items within each day by category order
     for (const day in days) {
       days[day].sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
     }
     return days;
   }, [menuItems]);
+
+  const exportMenuPDF = () => {
+    if (menuItems.length === 0) return;
+    const doc = new jsPDF();
+    const title = `Wochenkarte KW ${weekNumber}/${year}`;
+    
+    doc.setFontSize(18);
+    doc.text(title, 14, 20);
+    doc.setFontSize(11);
+    doc.text("CU Kantine – BZO Gera/Zwötzen", 14, 28);
+
+    const tableData: string[][] = [];
+    DAY_NAMES.forEach((day, dayIdx) => {
+      const items = groupedByDay[dayIdx] || [];
+      if (items.length === 0) return;
+      items.forEach((item, i) => {
+        tableData.push([
+          i === 0 ? day : "",
+          CATEGORY_LABELS[item.category] || item.category,
+          item.name,
+          item.price > 0 ? `${item.price.toFixed(2).replace(".", ",")} €` : "–",
+        ]);
+      });
+    });
+
+    autoTable(doc, {
+      startY: 35,
+      head: [["Tag", "Kategorie", "Gericht", "Preis"]],
+      body: tableData,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [34, 34, 34] },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 30 }, 1: { cellWidth: 30 } },
+    });
+
+    doc.save(`Wochenkarte_KW${weekNumber}_${year}.pdf`);
+  };
 
   if (loading) {
     return (
@@ -195,9 +237,14 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
     <section id="wochenkarte" className="mb-14">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-2xl md:text-3xl">Wochenkarte – KW {weekNumber}</h2>
-        <Link to="/vorbestellen">
-          <Button size="sm" className="gap-1">Jetzt vorbestellen</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportMenuPDF}>
+            <Download className="mr-2 h-4 w-4" /> PDF
+          </Button>
+          <Link to="/vorbestellen">
+            <Button size="sm" className="gap-1">Jetzt vorbestellen</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Desktop table */}
@@ -354,18 +401,13 @@ export default function KantineDetail() {
       </section>
 
       <div className="container py-10 md:py-16">
-        {/* Description */}
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-10 max-w-2xl text-muted-foreground">
           {standort.description}
         </motion.p>
 
-        {/* Bistro Ophelia menu downloads */}
         {id === "theater" && <BistroOpheliaMenus />}
-
-        {/* Weekly menu from DB (only for BZO) */}
         {id === "bzo" && <WeeklyMenuFromDB kantineId="bzo" />}
 
-        {/* Favorite dishes voting (only for BZO) */}
         {id === "bzo" && (
           <section id="voting">
             <h2 className="mb-6 font-serif text-2xl md:text-3xl">Lieblingsgerichte</h2>

@@ -9,9 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Trash2, Upload, Image as ImageIcon, Eye, EyeOff, Save, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft, Plus, Trash2, Upload, Image as ImageIcon, Eye, EyeOff, Save, Search, FileText, Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const DAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag"];
 const CATEGORIES = [
@@ -45,7 +48,6 @@ function getISOWeek(d: Date) {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-/** Returns the Monday of ISO week */
 function getDateOfISOWeek(week: number, year: number) {
   const jan4 = new Date(Date.UTC(year, 0, 4));
   const dayOfWeek = jan4.getUTCDay() || 7;
@@ -80,8 +82,9 @@ export default function AdminWeeklyMenus() {
   const [dishSearch, setDishSearch] = useState("");
   const [newWeekCount, setNewWeekCount] = useState(1);
   const [assignImageDish, setAssignImageDish] = useState<MenuDish | null>(null);
+  const [deleteMenuConfirm, setDeleteMenuConfirm] = useState(false);
+  const [showMenuOverview, setShowMenuOverview] = useState(false);
 
-  // Auth check
   useEffect(() => {
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -121,10 +124,8 @@ export default function AdminWeeklyMenus() {
     load();
   }, [selectedMenu]);
 
-  // Create new weekly menu(s)
   const createMenus = async () => {
     const now = new Date();
-    // Find the latest existing week
     const existingWeeks = weeklyMenus.map(m => m.year * 100 + m.week_number);
     let startWeek: Date;
     if (existingWeeks.length > 0) {
@@ -135,7 +136,6 @@ export default function AdminWeeklyMenus() {
       startWeek = new Date(now);
       startWeek.setDate(now.getDate() + 7);
     }
-
     let created = 0;
     for (let i = 0; i < newWeekCount; i++) {
       const d = new Date(startWeek);
@@ -146,16 +146,24 @@ export default function AdminWeeklyMenus() {
       if (!error) created++;
       else if (error.code !== "23505") { toast.error("Fehler beim Erstellen"); return; }
     }
-    if (created > 0) {
-      toast.success(`${created} Woche(n) erstellt`);
-      await loadData();
-    } else {
-      toast.info("Wochen existieren bereits");
-    }
+    if (created > 0) { toast.success(`${created} Woche(n) erstellt`); await loadData(); }
+    else toast.info("Wochen existieren bereits");
+  };
+
+  const deleteMenu = async () => {
+    if (!selectedMenu) return;
+    // Delete all items first, then the menu
+    await supabase.from("daily_menu_items").delete().eq("weekly_menu_id", selectedMenu.id);
+    const { error } = await supabase.from("weekly_menus").delete().eq("id", selectedMenu.id);
+    if (error) { toast.error("Fehler beim Löschen"); return; }
+    setSelectedMenu(null);
+    setMenuItems([]);
+    setDeleteMenuConfirm(false);
+    toast.success("Wochenkarte gelöscht");
+    await loadData();
   };
 
   const addItemFromDish = (day: number, category: string, dish: MenuDish) => {
-    // Check for duplicates
     const existing = menuItems.find(i => i.day_of_week === day && i.name === dish.name);
     if (existing) { toast.error("Gericht bereits für diesen Tag angelegt"); return; }
     setMenuItems(prev => [...prev, {
@@ -182,6 +190,7 @@ export default function AdminWeeklyMenus() {
     const item = menuItems[index];
     if (item.id) await supabase.from("daily_menu_items").delete().eq("id", item.id);
     setMenuItems(prev => prev.filter((_, i) => i !== index));
+    toast.success("Position entfernt");
   };
 
   const saveAll = async () => {
@@ -244,6 +253,46 @@ export default function AdminWeeklyMenus() {
     toast.success("Bild gelöscht");
   };
 
+  const exportMenuPDF = () => {
+    if (!selectedMenu || menuItems.length === 0) return;
+    const doc = new jsPDF();
+    const title = `Wochenkarte KW ${selectedMenu.week_number}/${selectedMenu.year}`;
+    const dateRange = formatDateRange(selectedMenu.week_number, selectedMenu.year);
+    
+    doc.setFontSize(18);
+    doc.text(title, 14, 20);
+    doc.setFontSize(11);
+    doc.text(dateRange, 14, 28);
+    doc.text("CU Kantine – BZO Gera/Zwötzen", 14, 35);
+
+    const tableData: string[][] = [];
+    DAYS.forEach((day, dayIdx) => {
+      const items = menuItems.filter(i => i.day_of_week === dayIdx && i.is_active);
+      if (items.length === 0) return;
+      items.sort((a, b) => CATEGORIES.findIndex(c => c.value === a.category) - CATEGORIES.findIndex(c => c.value === b.category));
+      items.forEach((item, i) => {
+        const catLabel = CATEGORIES.find(c => c.value === item.category)?.label || item.category;
+        tableData.push([
+          i === 0 ? day : "",
+          catLabel,
+          item.name,
+          item.price > 0 ? `${item.price.toFixed(2).replace(".", ",")} €` : "–",
+        ]);
+      });
+    });
+
+    autoTable(doc, {
+      startY: 42,
+      head: [["Tag", "Kategorie", "Gericht", "Preis"]],
+      body: tableData,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [34, 34, 34] },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 30 }, 1: { cellWidth: 30 } },
+    });
+
+    doc.save(`Wochenkarte_KW${selectedMenu.week_number}_${selectedMenu.year}.pdf`);
+  };
+
   if (loading) return <Layout><div className="flex min-h-[60vh] items-center justify-center"><p className="text-muted-foreground">Laden…</p></div></Layout>;
 
   const dayItems = (day: number) => menuItems.filter(i => i.day_of_week === day);
@@ -296,14 +345,76 @@ export default function AdminWeeklyMenus() {
                       {selectedMenu.is_published ? <><EyeOff className="mr-2 h-4 w-4" /> Zurückziehen</> : <><Eye className="mr-2 h-4 w-4" /> Veröffentlichen</>}
                     </Button>
                     <Button onClick={saveAll} disabled={saving}><Save className="mr-2 h-4 w-4" /> {saving ? "Speichert…" : "Alles speichern"}</Button>
+                    <Button variant="outline" onClick={() => setShowMenuOverview(true)}><FileText className="mr-2 h-4 w-4" /> Übersicht</Button>
+                    <Button variant="outline" onClick={exportMenuPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
+                    <Button variant="destructive" size="sm" onClick={() => setDeleteMenuConfirm(true)}>
+                      <Trash2 className="mr-2 h-4 w-4" /> Woche löschen
+                    </Button>
                   </>
                 )}
               </div>
+
+              {/* Delete menu confirmation dialog */}
+              <Dialog open={deleteMenuConfirm} onOpenChange={setDeleteMenuConfirm}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Wochenkarte löschen?</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-muted-foreground">
+                    Möchten Sie die Wochenkarte KW {selectedMenu?.week_number}/{selectedMenu?.year} wirklich löschen?
+                    Alle zugehörigen Gerichte werden ebenfalls entfernt. Diese Aktion kann nicht rückgängig gemacht werden.
+                  </p>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setDeleteMenuConfirm(false)}>Abbrechen</Button>
+                    <Button variant="destructive" onClick={deleteMenu}>Endgültig löschen</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Menu text overview dialog */}
+              <Dialog open={showMenuOverview} onOpenChange={setShowMenuOverview}>
+                <DialogContent className="max-h-[80vh] overflow-y-auto max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Wochenkarte KW {selectedMenu?.week_number}/{selectedMenu?.year}</DialogTitle>
+                  </DialogHeader>
+                  {selectedMenu && (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">{formatDateRange(selectedMenu.week_number, selectedMenu.year)}</p>
+                      {DAYS.map((day, dayIdx) => {
+                        const items = menuItems.filter(i => i.day_of_week === dayIdx && i.is_active);
+                        if (items.length === 0) return null;
+                        items.sort((a, b) => CATEGORIES.findIndex(c => c.value === a.category) - CATEGORIES.findIndex(c => c.value === b.category));
+                        return (
+                          <div key={dayIdx}>
+                            <h3 className="font-semibold text-foreground">{day}</h3>
+                            <ul className="ml-4 space-y-1 text-sm">
+                              {items.map(item => {
+                                const catLabel = CATEGORIES.find(c => c.value === item.category)?.label || item.category;
+                                return (
+                                  <li key={item.id || item.name}>
+                                    <span className="text-muted-foreground">{catLabel}:</span>{" "}
+                                    {item.name}
+                                    {item.price > 0 && <span className="text-muted-foreground"> – {item.price.toFixed(2).replace(".", ",")} €</span>}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                      <div className="flex justify-end">
+                        <Button variant="outline" size="sm" onClick={exportMenuPDF}><Download className="mr-2 h-4 w-4" /> Als PDF herunterladen</Button>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
 
               {selectedMenu && (
                 <>
                   <div className="rounded-lg border border-border bg-card p-3 text-sm font-medium">
                     KW {selectedMenu.week_number}/{selectedMenu.year} — {formatDateRange(selectedMenu.week_number, selectedMenu.year)}
+                    {selectedMenu.is_published && <Badge className="ml-2 bg-primary text-primary-foreground">Veröffentlicht</Badge>}
                   </div>
                   <Tabs value={activeDay} onValueChange={setActiveDay}>
                     <TabsList>
@@ -319,35 +430,31 @@ export default function AdminWeeklyMenus() {
                               <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <CardTitle className="text-base">{cat.label}</CardTitle>
                                 <div className="flex items-center gap-2">
-                                  {items.length === 0 && (
-                                    <Dialog>
-                                      <DialogTrigger asChild>
-                                        <Button variant="outline" size="sm"><Search className="mr-1 h-4 w-4" /> Aus Katalog wählen</Button>
-                                      </DialogTrigger>
-                                      <DialogContent className="max-h-[70vh] overflow-y-auto">
-                                        <DialogHeader><DialogTitle>Gericht wählen – {cat.label}</DialogTitle></DialogHeader>
-                                        <Input placeholder="Suchen…" value={dishSearch} onChange={e => setDishSearch(e.target.value)} className="mb-3" />
-                                        <div className="space-y-1">
-                                          {dishes.map(d => {
-                                            const img = dishImages.find(di => di.id === d.dish_image_id);
-                                            return (
-                                              <button key={d.id} onClick={() => { addItemFromDish(dayIdx, cat.value, d); setDishSearch(""); }}
-                                                className="flex w-full items-center gap-3 rounded-md p-2 text-left hover:bg-muted transition-colors">
-                                                {img ? <img src={img.image_url} alt={img.name} className="h-10 w-10 rounded object-cover" /> : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>}
-                                                <span className="text-sm">{d.name}</span>
-                                              </button>
-                                            );
-                                          })}
-                                          {dishes.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Keine Gerichte gefunden</p>}
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
-                                  )}
-                                  {items.length === 0 && (
-                                    <Button variant="ghost" size="sm" onClick={() => addEmptyItem(dayIdx, cat.value)}>
-                                      <Plus className="mr-1 h-4 w-4" /> Manuell
-                                    </Button>
-                                  )}
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm"><Search className="mr-1 h-4 w-4" /> Aus Katalog</Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-h-[70vh] overflow-y-auto">
+                                      <DialogHeader><DialogTitle>Gericht wählen – {cat.label}</DialogTitle></DialogHeader>
+                                      <Input placeholder="Suchen…" value={dishSearch} onChange={e => setDishSearch(e.target.value)} className="mb-3" />
+                                      <div className="space-y-1">
+                                        {dishes.map(d => {
+                                          const img = dishImages.find(di => di.id === d.dish_image_id);
+                                          return (
+                                            <button key={d.id} onClick={() => { addItemFromDish(dayIdx, cat.value, d); setDishSearch(""); }}
+                                              className="flex w-full items-center gap-3 rounded-md p-2 text-left hover:bg-muted transition-colors">
+                                              {img ? <img src={img.image_url} alt={img.name} className="h-10 w-10 rounded object-cover" /> : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>}
+                                              <span className="text-sm">{d.name}</span>
+                                            </button>
+                                          );
+                                        })}
+                                        {dishes.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Keine Gerichte gefunden</p>}
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                  <Button variant="ghost" size="sm" onClick={() => addEmptyItem(dayIdx, cat.value)}>
+                                    <Plus className="mr-1 h-4 w-4" /> Manuell
+                                  </Button>
                                 </div>
                               </CardHeader>
                               <CardContent className="space-y-3">
@@ -386,6 +493,7 @@ export default function AdminWeeklyMenus() {
                                     </div>
                                   );
                                 })}
+                                {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Keine Gerichte für diese Kategorie</p>}
                               </CardContent>
                             </Card>
                           );
@@ -406,7 +514,6 @@ export default function AdminWeeklyMenus() {
                 {menuDishes.map(d => {
                   const linkedImgIds = menuDishImages.filter(l => l.menu_dish_id === d.id).map(l => l.dish_image_id);
                   const linkedImgs = dishImages.filter(di => linkedImgIds.includes(di.id));
-                  // Also show legacy single image
                   const legacyImg = d.dish_image_id && !linkedImgIds.includes(d.dish_image_id) ? dishImages.find(di => di.id === d.dish_image_id) : null;
                   const allImgs = legacyImg ? [legacyImg, ...linkedImgs] : linkedImgs;
                   const catLabel = CATEGORIES.find(c => c.value === d.category)?.label || d.category;

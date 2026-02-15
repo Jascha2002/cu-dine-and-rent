@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ShoppingCart, User, CreditCard, Check, Minus, Plus, Phone, ArrowLeft, ArrowRight, CalendarDays, Image as ImageIcon } from "lucide-react";
+import { Clock, ShoppingCart, User, CreditCard, Check, Minus, Plus, Phone, ArrowLeft, ArrowRight, CalendarDays, Image as ImageIcon, Hash, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -46,17 +47,14 @@ function useSameDayCutoff() {
 function getOrderableDates(now: Date, canOrderToday: boolean): Date[] {
   const dates: Date[] = [];
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  // Current week remaining days (Mon=1..Thu=4)
   if (canOrderToday && today.getDay() >= 1 && today.getDay() <= 4) {
     dates.push(new Date(today));
   }
-  // Future days this week
   for (let d = today.getDay() + 1; d <= 4; d++) {
     const date = new Date(today);
     date.setDate(today.getDate() + (d - today.getDay()));
     dates.push(date);
   }
-  // Next week Mon-Thu (always available if menu is published)
   const nextMon = startOfISOWeek(addDays(today, 7));
   for (let i = 0; i < 4; i++) {
     dates.push(addDays(nextMon, i));
@@ -78,11 +76,12 @@ export default function Vorbestellen() {
   const [dishImages, setDishImages] = useState<DishImage[]>([]);
   const [publishedWeeks, setPublishedWeeks] = useState<{ id: string; year: number; week_number: number }[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [contact, setContact] = useState({ name: "", phone: "", email: "", payment: "sumup" });
+  const [contact, setContact] = useState({ name: "", phone: "", email: "", address: "", payment: "sumup" });
   const [submitting, setSubmitting] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [pickupNumber, setPickupNumber] = useState("");
+  const [agbAccepted, setAgbAccepted] = useState(false);
 
-  // Load published menus + images
   useEffect(() => {
     const load = async () => {
       const [menusRes, imagesRes] = await Promise.all([
@@ -107,14 +106,13 @@ export default function Vorbestellen() {
 
   const orderableDates = useMemo(() => getOrderableDates(now, canOrderToday), [now, canOrderToday]);
 
-  // Filter dates to only those with published menus
   const availableDates = useMemo(() => {
     return orderableDates.filter(date => {
       const week = getISOWeek(date);
       const year = getYear(date);
       const menu = publishedWeeks.find(m => m.week_number === week && m.year === year);
       if (!menu) return false;
-      const dayOfWeek = (date.getDay() + 6) % 7; // 0=Mon
+      const dayOfWeek = (date.getDay() + 6) % 7;
       return menuItems.some(i => i.weekly_menu_id === menu.id && i.day_of_week === dayOfWeek && i.is_active);
     });
   }, [orderableDates, publishedWeeks, menuItems]);
@@ -155,14 +153,19 @@ export default function Vorbestellen() {
     return sum + (item?.price || 0) * c.quantity;
   }, 0);
 
-  const canProceed = step === 0 ? cart.length > 0 : step === 1 ? true : step === 2 ? contact.name.trim() && contact.phone.trim() : true;
+  const isCashPayment = contact.payment === "bar";
+  const contactValid = contact.name.trim() && contact.phone.trim() && contact.email.trim() && 
+    (!isCashPayment || contact.address.trim());
+  const canProceed = step === 0 ? cart.length > 0 : step === 1 ? true : step === 2 ? contactValid && agbAccepted : true;
 
   const submitOrder = async () => {
     setSubmitting(true);
     try {
       const { data: order, error } = await supabase.from("preorders").insert({
-        customer_name: contact.name, customer_phone: contact.phone, customer_email: contact.email,
+        customer_name: contact.name, customer_phone: contact.phone, customer_email: contact.email || null,
+        customer_address: contact.address || "",
         payment_method: contact.payment, total_amount: cartTotal,
+        payment_status: isCashPayment ? "pending_cash" : "pending",
       }).select().single();
       if (error) throw error;
 
@@ -174,9 +177,16 @@ export default function Vorbestellen() {
       const { error: itemsErr } = await supabase.from("preorder_items").insert(items);
       if (itemsErr) throw itemsErr;
 
+      setPickupNumber(order.pickup_number || "");
       setOrderConfirmed(true);
       setStep(3);
-      toast.success("Bestellung erfolgreich aufgegeben!");
+
+      if (isCashPayment) {
+        toast.success("Bestellung aufgegeben – Barzahlung bei Abholung");
+      } else {
+        // SumUp placeholder – in production this would redirect to SumUp
+        toast.success("Bestellung aufgegeben – Zahlung wird vorbereitet");
+      }
     } catch (e) {
       toast.error("Fehler bei der Bestellung");
     }
@@ -202,7 +212,6 @@ export default function Vorbestellen() {
 
   return (
     <Layout>
-      {/* Timer bar for same-day */}
       {canOrderToday && (
         <div className="bg-accent text-accent-foreground">
           <div className="container flex items-center justify-center gap-2 py-2 text-sm font-medium">
@@ -329,18 +338,43 @@ export default function Vorbestellen() {
                 <Card>
                   <CardHeader><CardTitle className="text-lg">Kontaktdaten</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <div><Label htmlFor="name">Name *</Label><Input id="name" value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} placeholder="Ihr Name" /></div>
+                    <div><Label htmlFor="name">Name *</Label><Input id="name" value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} placeholder="Ihr vollständiger Name" /></div>
                     <div><Label htmlFor="phone">Telefon *</Label><Input id="phone" type="tel" value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} placeholder="Für Rückfragen" /></div>
-                    <div><Label htmlFor="email">E-Mail (optional)</Label><Input id="email" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} placeholder="Für Bestätigung" /></div>
+                    <div><Label htmlFor="email">E-Mail *</Label><Input id="email" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} placeholder="Für Bestellbestätigung & Abholnummer" /></div>
+                    {isCashPayment && (
+                      <div>
+                        <Label htmlFor="address">Anschrift * (bei Barzahlung erforderlich)</Label>
+                        <Textarea id="address" value={contact.address} onChange={e => setContact({ ...contact, address: e.target.value })} placeholder="Straße, Hausnr., PLZ, Ort" rows={2} />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader><CardTitle className="text-lg">Zahlungsart</CardTitle></CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <RadioGroup value={contact.payment} onValueChange={v => setContact({ ...contact, payment: v })}>
-                      <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3"><RadioGroupItem value="sumup" id="sumup" /><Label htmlFor="sumup" className="cursor-pointer">Online bezahlen (SumUp)</Label></div>
-                      <div className="mt-2 flex items-center gap-3 rounded-lg border border-border/50 p-3"><RadioGroupItem value="bar" id="bar" /><Label htmlFor="bar" className="cursor-pointer">Bar bei Abholung</Label></div>
+                      <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3">
+                        <RadioGroupItem value="sumup" id="sumup" />
+                        <Label htmlFor="sumup" className="cursor-pointer flex-1">
+                          <span className="font-medium">Online bezahlen (SumUp)</span>
+                          <p className="text-xs text-muted-foreground">Abholnummer sofort nach Zahlung</p>
+                        </Label>
+                      </div>
+                      <div className="mt-2 flex items-center gap-3 rounded-lg border border-border/50 p-3">
+                        <RadioGroupItem value="bar" id="bar" />
+                        <Label htmlFor="bar" className="cursor-pointer flex-1">
+                          <span className="font-medium">Bar bei Abholung</span>
+                          <p className="text-xs text-muted-foreground">Name, Anschrift und E-Mail erforderlich</p>
+                        </Label>
+                      </div>
                     </RadioGroup>
+
+                    <div className="flex items-start gap-2 pt-2">
+                      <Checkbox id="agb" checked={agbAccepted} onCheckedChange={v => setAgbAccepted(v === true)} />
+                      <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
+                        Ich akzeptiere die Bestellbedingungen und bestätige die Richtigkeit meiner Angaben. *
+                      </Label>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -351,7 +385,28 @@ export default function Vorbestellen() {
               <div className="mx-auto max-w-xl text-center">
                 <div className="mb-6 flex justify-center"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground"><Check className="h-8 w-8" /></div></div>
                 <h2 className="mb-2 font-serif text-2xl">Bestellung aufgegeben!</h2>
-                <p className="mb-6 text-muted-foreground">Vielen Dank. Ihre Bestellung wurde erfolgreich übermittelt.</p>
+                
+                {pickupNumber && (
+                  <div className="my-6 rounded-xl border-2 border-primary bg-primary/5 p-6">
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">Ihre Abholnummer</p>
+                    <p className="font-mono text-4xl font-bold text-primary">{pickupNumber}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {isCashPayment 
+                        ? "Bitte halten Sie diese Nummer und den Betrag passend bei Abholung bereit."
+                        : "Sie erhalten diese Nummer auch per E-Mail nach bestätigter Zahlung."
+                      }
+                    </p>
+                  </div>
+                )}
+
+                {!isCashPayment && (
+                  <div className="my-4 rounded-lg border border-accent bg-accent/10 p-4">
+                    <CreditCard className="mx-auto mb-2 h-6 w-6 text-accent" />
+                    <p className="text-sm font-medium">Zahlung via SumUp</p>
+                    <p className="text-xs text-muted-foreground">Die Zahlungsabwicklung wird in Kürze verfügbar sein. Sie werden per E-Mail informiert.</p>
+                  </div>
+                )}
+
                 <Card>
                   <CardContent className="space-y-3 p-6 text-left">
                     {cart.map(c => {
@@ -370,11 +425,19 @@ export default function Vorbestellen() {
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <p><strong>Name:</strong> {contact.name}</p>
                       <p><strong>Telefon:</strong> {contact.phone}</p>
-                      <p><strong>Zahlung:</strong> {contact.payment === "sumup" ? "Online (SumUp)" : "Bar bei Abholung"}</p>
+                      <p><strong>E-Mail:</strong> {contact.email}</p>
+                      {isCashPayment && contact.address && <p><strong>Anschrift:</strong> {contact.address}</p>}
+                      <p><strong>Zahlung:</strong> {isCashPayment ? "Bar bei Abholung" : "Online (SumUp)"}</p>
                       <p><strong>Abholung:</strong> 11:30 – 13:30 Uhr, BZO Gera/Zwötzen</p>
                     </div>
                   </CardContent>
                 </Card>
+
+                {contact.email && (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Eine Bestätigung mit Ihrer Abholnummer wird an <strong>{contact.email}</strong> gesendet.
+                  </p>
+                )}
               </div>
             )}
           </motion.div>
