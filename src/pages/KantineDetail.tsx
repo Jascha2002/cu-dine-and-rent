@@ -108,14 +108,33 @@ function BistroOpheliaMenus() {
 }
 
 function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
+  const [availableMenus, setAvailableMenus] = useState<{ id: string; week_number: number; year: number }[]>([]);
+  const [selectedMenuId, setSelectedMenuId] = useState<string>("");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [dishImages, setDishImages] = useState<DishImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekNumber, setWeekNumber] = useState(0);
   const [year, setYear] = useState(0);
 
+  // Load all published menus for this location
   useEffect(() => {
     const load = async () => {
+      const { data: menus } = await supabase
+        .from("weekly_menus")
+        .select("id, week_number, year")
+        .eq("is_published", true)
+        .eq("location", kantineId)
+        .order("year", { ascending: false })
+        .order("week_number", { ascending: false });
+
+      if (!menus || menus.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      setAvailableMenus(menus);
+
+      // Auto-select: current week, else next week, else most recent
       const now = new Date();
       const currentWeek = getISOWeek(now);
       const currentYear = getYear(now);
@@ -123,42 +142,28 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
       const nextWeek = getISOWeek(nextWeekDate);
       const nextYear = getYear(nextWeekDate);
 
-      // Try current week first, then next week
-      let menu: { id: string; week_number: number; year: number } | null = null;
+      const current = menus.find(m => m.week_number === currentWeek && m.year === currentYear);
+      const next = menus.find(m => m.week_number === nextWeek && m.year === nextYear);
+      const best = current || next || menus[0];
 
-      const { data: currentMenu } = await supabase
-        .from("weekly_menus")
-        .select("id, week_number, year")
-        .eq("is_published", true)
-        .eq("location", kantineId)
-        .eq("week_number", currentWeek)
-        .eq("year", currentYear)
-        .maybeSingle();
+      setSelectedMenuId(best.id);
+    };
+    load();
+  }, [kantineId]);
 
-      if (currentMenu) {
-        menu = currentMenu;
-      } else {
-        const { data: nextMenu } = await supabase
-          .from("weekly_menus")
-          .select("id, week_number, year")
-          .eq("is_published", true)
-          .eq("location", kantineId)
-          .eq("week_number", nextWeek)
-          .eq("year", nextYear)
-          .maybeSingle();
-        menu = nextMenu;
-      }
+  // Load items for selected menu
+  useEffect(() => {
+    if (!selectedMenuId) return;
+    const menu = availableMenus.find(m => m.id === selectedMenuId);
+    if (!menu) return;
 
-      if (!menu) {
-        setLoading(false);
-        return;
-      }
+    setLoading(true);
+    setWeekNumber(menu.week_number);
+    setYear(menu.year);
 
-      setWeekNumber(menu.week_number);
-      setYear(menu.year);
-
+    const load = async () => {
       const [itemsRes, imagesRes] = await Promise.all([
-        supabase.from("daily_menu_items").select("*").eq("weekly_menu_id", menu.id).eq("is_active", true),
+        supabase.from("daily_menu_items").select("*").eq("weekly_menu_id", selectedMenuId).eq("is_active", true),
         supabase.from("dish_images").select("id, name, image_url"),
       ]);
 
@@ -171,7 +176,7 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [selectedMenuId, availableMenus]);
 
   // Deduplicate: each dish name appears only once per day
   const groupedByDay = useMemo(() => {
@@ -257,7 +262,23 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
   return (
     <section id="wochenkarte" className="mb-14">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-2xl md:text-3xl">Wochenkarte – KW {weekNumber}</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="font-serif text-2xl md:text-3xl">Wochenkarte – KW {weekNumber}</h2>
+          {availableMenus.length > 1 && (
+            <Select value={selectedMenuId} onValueChange={setSelectedMenuId}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableMenus.map(m => (
+                  <SelectItem key={m.id} value={m.id}>
+                    KW {m.week_number}/{m.year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={exportMenuPDF}>
             <Download className="mr-2 h-4 w-4" /> PDF
