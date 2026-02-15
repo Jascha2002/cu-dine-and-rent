@@ -383,6 +383,7 @@ export type Database = {
           created_at: string
           id: string
           is_published: boolean
+          location: string
           updated_at: string
           week_number: number
           year: number
@@ -391,6 +392,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_published?: boolean
+          location?: string
           updated_at?: string
           week_number: number
           year: number
@@ -399,6 +401,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_published?: boolean
+          location?: string
           updated_at?: string
           week_number?: number
           year?: number

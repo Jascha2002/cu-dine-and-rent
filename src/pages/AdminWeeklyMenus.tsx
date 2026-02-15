@@ -39,7 +39,14 @@ type MenuItem = {
   is_active: boolean;
   max_quantity: number;
 };
-type WeeklyMenu = { id: string; year: number; week_number: number; is_published: boolean };
+type WeeklyMenu = { id: string; year: number; week_number: number; is_published: boolean; location: string };
+
+const LOCATIONS = [
+  { value: "bzo", label: "BZO Gera/Zwötzen" },
+  { value: "theater", label: "Bistro Ophelia" },
+  { value: "awo", label: "AWO Gera" },
+  { value: "ihk", label: "IHK Ostthüringen" },
+];
 
 function getISOWeek(d: Date) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -81,6 +88,7 @@ export default function AdminWeeklyMenus() {
   const [activeDay, setActiveDay] = useState("0");
   const [dishSearch, setDishSearch] = useState("");
   const [newWeekCount, setNewWeekCount] = useState(1);
+  const [newLocation, setNewLocation] = useState("bzo");
   const [assignImageDish, setAssignImageDish] = useState<MenuDish | null>(null);
   const [deleteMenuConfirm, setDeleteMenuConfirm] = useState(false);
   const [showMenuOverview, setShowMenuOverview] = useState(false);
@@ -142,7 +150,7 @@ export default function AdminWeeklyMenus() {
       d.setUTCDate(startWeek.getUTCDate() + i * 7);
       const year = d.getUTCFullYear();
       const week = getISOWeek(d);
-      const { error } = await supabase.from("weekly_menus").insert({ year, week_number: week });
+      const { error } = await supabase.from("weekly_menus").insert({ year, week_number: week, location: newLocation });
       if (!error) created++;
       else if (error.code !== "23505") { toast.error("Fehler beim Erstellen"); return; }
     }
@@ -328,14 +336,23 @@ export default function AdminWeeklyMenus() {
                 <Select value={selectedMenu?.id || ""} onValueChange={v => setSelectedMenu(weeklyMenus.find(m => m.id === v) || null)}>
                   <SelectTrigger className="w-80"><SelectValue placeholder="Woche wählen…" /></SelectTrigger>
                   <SelectContent>
-                    {weeklyMenus.map(m => (
-                      <SelectItem key={m.id} value={m.id}>
-                        KW {m.week_number}/{m.year} — {formatDateRange(m.week_number, m.year)} {m.is_published ? "✓" : ""}
-                      </SelectItem>
-                    ))}
+                    {weeklyMenus.map(m => {
+                      const loc = LOCATIONS.find(l => l.value === m.location)?.label || m.location;
+                      return (
+                        <SelectItem key={m.id} value={m.id}>
+                          KW {m.week_number}/{m.year} — {loc} — {formatDateRange(m.week_number, m.year)} {m.is_published ? "✓" : ""}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 <div className="flex items-center gap-2">
+                  <Select value={newLocation} onValueChange={setNewLocation}>
+                    <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <Input type="number" min={1} max={12} value={newWeekCount} onChange={e => setNewWeekCount(parseInt(e.target.value) || 1)} className="w-16" />
                   <Button variant="outline" onClick={createMenus}><Plus className="mr-2 h-4 w-4" /> Woche(n) erstellen</Button>
                 </div>
