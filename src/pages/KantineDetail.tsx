@@ -119,14 +119,33 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
       const now = new Date();
       const currentWeek = getISOWeek(now);
       const currentYear = getYear(now);
+      const nextWeekDate = addDays(now, 7);
+      const nextWeek = getISOWeek(nextWeekDate);
+      const nextYear = getYear(nextWeekDate);
 
-      const { data: menu } = await supabase
+      // Try current week first, then next week
+      let menu: { id: string; week_number: number; year: number } | null = null;
+
+      const { data: currentMenu } = await supabase
         .from("weekly_menus")
         .select("id, week_number, year")
         .eq("is_published", true)
         .eq("week_number", currentWeek)
         .eq("year", currentYear)
         .maybeSingle();
+
+      if (currentMenu) {
+        menu = currentMenu;
+      } else {
+        const { data: nextMenu } = await supabase
+          .from("weekly_menus")
+          .select("id, week_number, year")
+          .eq("is_published", true)
+          .eq("week_number", nextWeek)
+          .eq("year", nextYear)
+          .maybeSingle();
+        menu = nextMenu;
+      }
 
       if (!menu) {
         setLoading(false);
