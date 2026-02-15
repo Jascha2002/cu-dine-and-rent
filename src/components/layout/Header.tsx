@@ -66,13 +66,13 @@ export default function Header() {
             <Clock className="h-3.5 w-3.5" />
             {isOrderable ? (
               <span>
-                Bestellbar noch{" "}
+                Heute bestellen noch{" "}
                 <strong>
                   {minutes}:{seconds.toString().padStart(2, "0")}
                 </strong>
               </span>
             ) : (
-              <span>Ab morgen wieder bestellbar</span>
+              <span>Für heute bestellen bis 11:15 Uhr · Folgetage jederzeit</span>
             )}
           </div>
         </div>
