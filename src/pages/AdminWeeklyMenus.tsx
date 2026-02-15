@@ -92,6 +92,15 @@ export default function AdminWeeklyMenus() {
   const [assignImageDish, setAssignImageDish] = useState<MenuDish | null>(null);
   const [deleteMenuConfirm, setDeleteMenuConfirm] = useState(false);
   const [showMenuOverview, setShowMenuOverview] = useState(false);
+  const [newDishDialogOpen, setNewDishDialogOpen] = useState(false);
+  const [newDishName, setNewDishName] = useState("");
+  const [newDishCategory, setNewDishCategory] = useState("menu1");
+  const [newDishPrice, setNewDishPrice] = useState("6.50");
+  const [creatingDish, setCreatingDish] = useState(false);
+  const [editDish, setEditDish] = useState<MenuDish | null>(null);
+  const [editDishName, setEditDishName] = useState("");
+  const [editDishCategory, setEditDishCategory] = useState("");
+  const [editDishPrice, setEditDishPrice] = useState("");
 
   useEffect(() => {
     const check = async () => {
@@ -526,6 +535,9 @@ export default function AdminWeeklyMenus() {
             <TabsContent value="dishes" className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="font-serif text-lg font-semibold">Gerichtekatalog ({menuDishes.length} Gerichte)</h2>
+                <Button onClick={() => { setNewDishName(""); setNewDishCategory("menu1"); setNewDishPrice("6.50"); setNewDishDialogOpen(true); }}>
+                  <Plus className="mr-1 h-4 w-4" /> Neues Gericht
+                </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {menuDishes.map(d => {
@@ -552,13 +564,115 @@ export default function AdminWeeklyMenus() {
                           <p className="text-xs text-muted-foreground">{catLabel} · {d.default_price.toFixed(2)} €</p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" className="w-full" onClick={() => setAssignImageDish(d)}>
-                        <ImageIcon className="mr-1 h-3 w-3" /> Bilder verwalten ({allImgs.length})
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                          setEditDish(d);
+                          setEditDishName(d.name);
+                          setEditDishCategory(d.category);
+                          setEditDishPrice(d.default_price.toFixed(2));
+                        }}>
+                          Bearbeiten
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => setAssignImageDish(d)}>
+                          <ImageIcon className="mr-1 h-3 w-3" /> Bilder ({allImgs.length})
+                        </Button>
+                      </div>
                     </Card>
                   );
                 })}
               </div>
+
+              {/* New dish dialog */}
+              <Dialog open={newDishDialogOpen} onOpenChange={setNewDishDialogOpen}>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Neues Gericht anlegen</DialogTitle></DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Name</Label>
+                      <Input value={newDishName} onChange={e => setNewDishName(e.target.value)} placeholder="z.B. Schnitzel mit Pommes" />
+                    </div>
+                    <div>
+                      <Label>Kategorie</Label>
+                      <Select value={newDishCategory} onValueChange={setNewDishCategory}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Standardpreis (€)</Label>
+                      <Input type="number" step="0.10" min="0" value={newDishPrice} onChange={e => setNewDishPrice(e.target.value)} />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setNewDishDialogOpen(false)}>Abbrechen</Button>
+                    <Button disabled={!newDishName.trim() || creatingDish} onClick={async () => {
+                      setCreatingDish(true);
+                      const { data, error } = await supabase.from("menu_dishes").insert({
+                        name: newDishName.trim(),
+                        category: newDishCategory,
+                        default_price: parseFloat(newDishPrice) || 6.5,
+                      }).select().single();
+                      setCreatingDish(false);
+                      if (error) { toast.error("Fehler beim Anlegen"); return; }
+                      setMenuDishes(prev => [...prev, data as MenuDish].sort((a, b) => a.name.localeCompare(b.name)));
+                      setNewDishDialogOpen(false);
+                      toast.success("Gericht angelegt");
+                    }}>Anlegen</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Edit dish dialog */}
+              <Dialog open={!!editDish} onOpenChange={open => { if (!open) setEditDish(null); }}>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Gericht bearbeiten</DialogTitle></DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Name</Label>
+                      <Input value={editDishName} onChange={e => setEditDishName(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label>Kategorie</Label>
+                      <Select value={editDishCategory} onValueChange={setEditDishCategory}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Standardpreis (€)</Label>
+                      <Input type="number" step="0.10" min="0" value={editDishPrice} onChange={e => setEditDishPrice(e.target.value)} />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="destructive" onClick={async () => {
+                      if (!editDish) return;
+                      await supabase.from("menu_dish_images").delete().eq("menu_dish_id", editDish.id);
+                      const { error } = await supabase.from("menu_dishes").update({ is_active: false }).eq("id", editDish.id);
+                      if (error) { toast.error("Fehler beim Löschen"); return; }
+                      setMenuDishes(prev => prev.filter(d => d.id !== editDish.id));
+                      setEditDish(null);
+                      toast.success("Gericht deaktiviert");
+                    }}>Deaktivieren</Button>
+                    <Button variant="outline" onClick={() => setEditDish(null)}>Abbrechen</Button>
+                    <Button disabled={!editDishName.trim()} onClick={async () => {
+                      if (!editDish) return;
+                      const { error } = await supabase.from("menu_dishes").update({
+                        name: editDishName.trim(),
+                        category: editDishCategory,
+                        default_price: parseFloat(editDishPrice) || 6.5,
+                      }).eq("id", editDish.id);
+                      if (error) { toast.error("Fehler beim Speichern"); return; }
+                      setMenuDishes(prev => prev.map(d => d.id === editDish.id ? { ...d, name: editDishName.trim(), category: editDishCategory, default_price: parseFloat(editDishPrice) || 6.5 } : d));
+                      setEditDish(null);
+                      toast.success("Gericht aktualisiert");
+                    }}>Speichern</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {/* Image assignment dialog */}
               <Dialog open={!!assignImageDish} onOpenChange={open => { if (!open) setAssignImageDish(null); }}>
