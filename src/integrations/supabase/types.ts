@@ -294,34 +294,40 @@ export type Database = {
       preorders: {
         Row: {
           created_at: string
+          customer_address: string | null
           customer_email: string | null
           customer_name: string
           customer_phone: string
           id: string
           payment_method: string
           payment_status: string
+          pickup_number: string | null
           status: string
           total_amount: number
         }
         Insert: {
           created_at?: string
+          customer_address?: string | null
           customer_email?: string | null
           customer_name: string
           customer_phone: string
           id?: string
           payment_method?: string
           payment_status?: string
+          pickup_number?: string | null
           status?: string
           total_amount?: number
         }
         Update: {
           created_at?: string
+          customer_address?: string | null
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
           id?: string
           payment_method?: string
           payment_status?: string
+          pickup_number?: string | null
           status?: string
           total_amount?: number
         }
