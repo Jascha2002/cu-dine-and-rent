@@ -95,7 +95,7 @@ export default function Vorbestellen() {
   useEffect(() => {
     const load = async () => {
       const [menusRes, imagesRes] = await Promise.all([
-        supabase.from("weekly_menus").select("id, year, week_number").eq("is_published", true),
+        supabase.from("weekly_menus").select("id, year, week_number").eq("is_published", true).eq("location", "bzo"),
         supabase.from("dish_images").select("id, name, image_url"),
       ]);
       const menus = menusRes.data || [];

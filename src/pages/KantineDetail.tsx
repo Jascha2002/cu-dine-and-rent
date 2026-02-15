@@ -130,6 +130,7 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
         .from("weekly_menus")
         .select("id, week_number, year")
         .eq("is_published", true)
+        .eq("location", kantineId)
         .eq("week_number", currentWeek)
         .eq("year", currentYear)
         .maybeSingle();
@@ -141,6 +142,7 @@ function WeeklyMenuFromDB({ kantineId }: { kantineId: string }) {
           .from("weekly_menus")
           .select("id, week_number, year")
           .eq("is_published", true)
+          .eq("location", kantineId)
           .eq("week_number", nextWeek)
           .eq("year", nextYear)
           .maybeSingle();
