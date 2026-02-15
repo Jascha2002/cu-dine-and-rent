@@ -46,18 +46,28 @@ function useSameDayCutoff() {
 
 function getOrderableDates(now: Date, canOrderToday: boolean): Date[] {
   const dates: Date[] = [];
+  const seen = new Set<string>();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const addDate = (d: Date) => {
+    const key = format(d, "yyyy-MM-dd");
+    if (!seen.has(key)) { seen.add(key); dates.push(d); }
+  };
+
+  // Today (Mon-Thu, before cutoff)
   if (canOrderToday && today.getDay() >= 1 && today.getDay() <= 4) {
-    dates.push(new Date(today));
+    addDate(new Date(today));
   }
+  // Remaining days this week (Tue-Thu after today)
   for (let d = today.getDay() + 1; d <= 4; d++) {
     const date = new Date(today);
     date.setDate(today.getDate() + (d - today.getDay()));
-    dates.push(date);
+    addDate(date);
   }
+  // Next week Mon-Thu
   const nextMon = startOfISOWeek(addDays(today, 7));
   for (let i = 0; i < 4; i++) {
-    dates.push(addDays(nextMon, i));
+    addDate(addDays(nextMon, i));
   }
   return dates;
 }
