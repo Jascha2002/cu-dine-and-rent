@@ -113,7 +113,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-4">
             <Link to="/impressum" className="hover:text-primary-foreground">Impressum</Link>
             <Link to="/datenschutz" className="hover:text-primary-foreground">Datenschutz</Link>
-            <Link to="/agb-vorbestellung" className="hover:text-primary-foreground">AGB Vorbestellung</Link>
+            <Link to="/agb-catering" className="hover:text-primary-foreground">AGB Catering</Link>
             <Link to="/agb-vermietung" className="hover:text-primary-foreground">AGB Vermietung</Link>
             <Link to="/widerruf" className="hover:text-primary-foreground">Widerruf</Link>
           </div>
