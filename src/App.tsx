@@ -20,6 +20,7 @@ import Jobs from "./pages/Jobs";
 import AdminJobs from "./pages/AdminJobs";
 import AdminMenuUpload from "./pages/AdminMenuUpload";
 import AdminWeeklyMenus from "./pages/AdminWeeklyMenus";
+import AGBCatering from "./pages/AGBCatering";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +47,7 @@ const App = () => (
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/agb-vorbestellung" element={<Index />} />
+          <Route path="/agb-catering" element={<AGBCatering />} />
           <Route path="/agb-vermietung" element={<Index />} />
           <Route path="/widerruf" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
