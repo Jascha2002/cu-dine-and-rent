@@ -150,7 +150,6 @@ export default function Footer() {
               (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.35)';
             }}
           >
-            <span style={{ color: '#E30613' }}>⚡</span>
             Designed & developed by DeutLicht®
           </a>
         </div>
