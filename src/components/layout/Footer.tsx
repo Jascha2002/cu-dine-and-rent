@@ -119,5 +119,41 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* DeutLicht credit */}
+      <div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
+        <div className="flex justify-center" style={{ marginTop: 12, marginBottom: 12 }}>
+          <a
+            href="https://www.deutlicht.de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center no-underline"
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: 20,
+              padding: '4px 12px',
+              gap: 5,
+              fontSize: 11,
+              fontWeight: 500,
+              color: 'rgba(255,255,255,0.35)',
+              letterSpacing: '0.2px',
+              transition: 'all 0.3s ease',
+              textDecoration: 'none',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(227,6,19,0.4)';
+              (e.currentTarget as HTMLAnchorElement).style.color = '#E30613';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.15)';
+              (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.35)';
+            }}
+          >
+            <span style={{ color: '#E30613' }}>⚡</span>
+            Designed & developed by DeutLicht®
+          </a>
+        </div>
+      </div>
     </footer>;
 }
