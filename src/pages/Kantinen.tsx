@@ -121,6 +121,20 @@ export default function Kantinen() {
                     ))}
                   </div>
 
+                  {s.images && s.images.length > 0 && (
+                    <div className={`mb-5 grid gap-2 ${s.images.length >= 3 ? "grid-cols-3" : s.images.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+                      {s.images.map((img, idx) => (
+                        <div key={idx} className="overflow-hidden rounded-lg">
+                          <img
+                            src={img}
+                            alt={`${s.name} Bild ${idx + 1}`}
+                            className="h-32 w-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <Button asChild variant={s.highlight ? "default" : "outline"} className={s.highlight ? "bg-accent text-accent-foreground hover:bg-accent/90" : ""}>
                     <Link to={`/kantinen/${s.id}`} className="flex items-center gap-1">
                       Speiseplan & Details <ArrowRight className="h-4 w-4" />
