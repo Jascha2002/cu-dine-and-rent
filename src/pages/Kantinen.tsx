@@ -5,6 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout/Layout";
 
+import bzoAusgabe from "@/assets/kantinen/bzo-ausgabe.png";
+import bzoEingang from "@/assets/kantinen/bzo-eingang.png";
+import bzoLageplan from "@/assets/kantinen/bzo-lageplan.png";
+import opheliaEingang from "@/assets/kantinen/ophelia-eingang.png";
+import opheliaInnen from "@/assets/kantinen/ophelia-innen.png";
+
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
@@ -23,6 +29,7 @@ export const standorte = [
     description: "Unser Hauptstandort im Bildungszentrum Ost – mit täglichem Mittagstisch und Vorbestellmöglichkeit.",
     highlight: true,
     features: ["Vorbestellung möglich", "2 Menüs + Veggie", "Tagessuppe"],
+    images: [bzoAusgabe, bzoEingang, bzoLageplan],
   },
   {
     id: "theater",
@@ -34,6 +41,7 @@ export const standorte = [
     description: 'Unsere Theaterkantine \u201eBistro Ophelia\u201c \u2013 frische K\u00fcche in kulturellem Ambiente. Reservierungen f\u00fcr den Abend gern per Mail an: bistro-ophelia@cu-kantine.de',
     highlight: false,
     features: ["Wechselnder Speiseplan", "Snack-Karte", "Abendreservierung"],
+    images: [opheliaInnen, opheliaEingang],
   },
   {
     id: "awo",
@@ -44,6 +52,7 @@ export const standorte = [
     description: "Verlässliche Mittagsversorgung im AWO Zentrum für Mitarbeiter und Gäste.",
     highlight: false,
     features: ["Tagesmenü", "Dessert"],
+    images: [],
   },
   {
     id: "ihk",
@@ -54,6 +63,7 @@ export const standorte = [
     description: "Frische Mittagsküche in der Industrie- und Handelskammer Ostthüringen.",
     highlight: false,
     features: ["Tagesmenü", "Business-Lunch"],
+    images: [],
   },
 ];
 
