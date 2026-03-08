@@ -447,6 +447,34 @@ export default function KantineDetail() {
           {standort.description}
         </motion.p>
 
+        {standort.images && standort.images.length > 0 && (
+          <section className="mb-14" aria-label="Bildergalerie">
+            <div className="mb-5 flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              <h2 className="font-serif text-2xl md:text-3xl">Bildergalerie</h2>
+            </div>
+            <div className={`grid gap-4 ${standort.images.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : standort.images.length === 2 ? "sm:grid-cols-2" : "grid-cols-1"}`}>
+              {standort.images.map((img, index) => (
+                <motion.div
+                  key={`${standort.id}-detail-image-${index}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08, duration: 0.35 }}
+                  className="group overflow-hidden rounded-xl"
+                >
+                  <img
+                    src={img}
+                    alt={`${standort.name} Foto ${index + 1}`}
+                    loading="lazy"
+                    className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-72"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {id === "theater" && <BistroOpheliaMenus />}
         {id === "bzo" && <WeeklyMenuFromDB kantineId="bzo" />}
 
