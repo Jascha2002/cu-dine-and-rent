@@ -75,6 +75,12 @@ export default function Jobs() {
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="max-w-xl text-primary-foreground/80">
             Werden Sie Teil unseres Teams! Wir suchen engagierte Mitarbeiter für unsere Standorte in Gera.
           </motion.p>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-3 text-2xl font-bold italic text-accent">
+            „Weniger BLAA, mehr MHH…!"
+          </motion.p>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-4 text-sm text-primary-foreground/70">
+            Ansprechpartnerin: Josefine Fritzsche · <a href="mailto:fritzsche@cu-kantine.de" className="underline hover:text-primary-foreground">fritzsche@cu-kantine.de</a>
+          </motion.p>
         </div>
       </section>
 

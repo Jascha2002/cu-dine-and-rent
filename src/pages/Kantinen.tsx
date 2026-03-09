@@ -23,47 +23,49 @@ export const standorte = [
   {
     id: "bzo",
     name: "BZO Gera/Zwötzen",
-    address: "Bildungszentrum Ost, 07551 Gera",
+    address: "Lange Straße 52, 07551 Gera",
     phone: "0365 / 4222241",
-    hours: "Mo–Fr 11:30–13:30 Uhr",
-    description: "Unser Hauptstandort im Bildungszentrum Ost – mit täglichem Mittagstisch und Vorbestellmöglichkeit.",
+    hours: "Mo–Fr 06:30–18:30 Uhr",
+    description: "Unser Hauptstandort – öffentliche Kantine mit täglichem Mittagstisch und Vorbestellmöglichkeit.",
     highlight: true,
-    features: ["Vorbestellung möglich", "2 Menüs + Veggie", "Tagessuppe"],
+    features: ["Öffentliche Kantine", "Vorbestellung möglich", "2 Menüs + Veggie", "Tagessuppe"],
     images: [bzoAusgabe, bzoEingang, bzoLageplan],
   },
   {
     id: "theater",
     name: "Bistro Ophelia",
-    subtitle: "Theaterkantine am Theater Gera",
-    address: "Theaterplatz, 07545 Gera",
+    subtitle: "Betriebskantine Theater Gera",
+    address: "Theaterplatz 1, 07548 Gera",
     phone: "0365 / 4222241",
     hours: "Mo–Fr 07:30–18:00 Uhr",
-    description: 'Unsere Theaterkantine \u201eBistro Ophelia\u201c \u2013 frische K\u00fcche in kulturellem Ambiente. Reservierungen f\u00fcr den Abend gern per Mail an: bistro-ophelia@cu-kantine.de',
+    description: 'Nicht öffentliche Betriebskantine am Theater Gera. Reservierungen für den Abend gern per Mail an: bistro-ophelia@cu-kantine.de',
     highlight: false,
-    features: ["Wechselnder Speiseplan", "Snack-Karte", "Abendreservierung"],
+    features: ["Nicht öffentliche Kantine", "Wechselnder Speiseplan", "Snack-Karte", "Abendreservierung"],
     images: [opheliaInnen, opheliaEingang],
   },
   {
     id: "awo",
-    name: "AWO Gera",
-    address: "AWO Zentrum, 07545 Gera",
+    name: "Weitere Kantine",
+    address: "Gera",
     phone: "0365 / 4222241",
-    hours: "Mo–Fr 11:00–13:30 Uhr",
-    description: "Verlässliche Mittagsversorgung im AWO Zentrum für Mitarbeiter und Gäste.",
+    hours: "Eröffnung im Sommer 2026",
+    description: "Nicht öffentlich zugängliche Betriebskantine – Eröffnung im Sommer 2026.",
     highlight: false,
-    features: ["Tagesmenü", "Dessert"],
+    features: ["Eröffnung 2026", "Betriebskantine"],
     images: [],
+    comingSoon: true,
   },
   {
     id: "ihk",
     name: "IHK Gera",
-    address: "Gaswerkstraße, 07546 Gera",
+    address: "Gaswerkstraße 23, 07546 Gera",
     phone: "0365 / 4222241",
-    hours: "Mo–Fr 11:30–13:30 Uhr",
-    description: "Frische Mittagsküche in der Industrie- und Handelskammer Ostthüringen.",
+    hours: "Mo–Fr 07:00–17:30 Uhr",
+    description: "Öffentliche Kantine in der Industrie- und Handelskammer Ostthüringen. Eröffnung ab 7. April 2026.",
     highlight: false,
-    features: ["Tagesmenü", "Business-Lunch"],
+    features: ["Öffentliche Kantine", "Eröffnung ab 7. April 2026", "Tagesmenü", "Business-Lunch"],
     images: [],
+    comingSoon: true,
   },
 ];
 
@@ -84,6 +86,12 @@ export default function Kantinen() {
           >
             4 Standorte in Gera – täglich frisch, regional und zu fairem Preis. Einheitspreis: 6,50 € pro Hauptgericht.
           </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="mt-3 text-2xl font-bold italic text-accent"
+          >
+            „Weniger BLAA, mehr MHH…!"
+          </motion.p>
         </div>
       </section>
 
@@ -91,10 +99,15 @@ export default function Kantinen() {
         <div className="grid gap-6 md:grid-cols-2">
           {standorte.map((s, i) => (
             <motion.div key={s.id} variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <Card className={`group relative overflow-hidden transition-shadow hover:shadow-lg ${s.highlight ? "border-accent ring-2 ring-accent/20" : "border-border/50"}`}>
+              <Card className={`group relative overflow-hidden transition-shadow hover:shadow-lg ${s.highlight ? "border-accent ring-2 ring-accent/20" : "border-border/50"} ${(s as any).comingSoon ? "opacity-80" : ""}`}>
                 {s.highlight && (
                   <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
                     <Star className="h-3 w-3" /> Vorbestellung
+                  </div>
+                )}
+                {(s as any).comingSoon && (
+                  <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Demnächst
                   </div>
                 )}
                 <CardContent className="p-6">
@@ -145,6 +158,24 @@ export default function Kantinen() {
             </motion.div>
           ))}
         </div>
+
+        {/* CTA für Betreiber */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 rounded-xl border-2 border-accent/30 bg-accent/5 p-8 text-center"
+        >
+          <p className="text-lg font-semibold text-foreground md:text-xl">
+            Sie suchen noch einen Caterer bzw. Betreiber für Ihre Betriebskantine?
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            Melden Sie sich gerne unter{" "}
+            <a href="tel:+493654222241" className="font-semibold text-primary hover:underline">0365 - 4222241</a>{" "}
+            oder gerne auch per Mail{" "}
+            <a href="mailto:info@cu-kantine.de" className="font-semibold text-primary hover:underline">info@cu-kantine.de</a>
+          </p>
+        </motion.div>
       </section>
     </Layout>
   );

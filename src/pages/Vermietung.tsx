@@ -12,7 +12,7 @@ import Layout from "@/components/layout/Layout";
 import feldkuecheImg from "@/assets/rental-feldkueche.jpg";
 import outdoorbarImg from "@/assets/rental-outdoorbar.jpg";
 import grillImg from "@/assets/rental-grill.jpg";
-import zeltImg from "@/assets/rental-zelt.jpg";
+import huepfburgImg from "@/assets/rental-huepfburg.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -69,19 +69,18 @@ const equipment = [
     features: ["Smoker-Funktion", "Große Grillfläche", "Inkl. Reinigung", "Holzkohle inklusive"],
   },
   {
-    id: "zelt",
-    name: "Partyzelt & Ausstattung",
-    image: zeltImg,
-    description: "Festzelte inkl. Tische, Stühle und Beleuchtung. Komplett-Ausstattung für Ihre Veranstaltung.",
-    pricePerDay: 200,
-    deposit: 300,
-    capacity: "bis 80 Sitzplätze",
+    id: "huepfburg",
+    name: "Hüpfburg",
+    image: huepfburgImg,
+    description: "Bunte Hüpfburg für Kinder – der Hit auf jedem Fest! Perfekt für Geburtstage, Firmenfeiern und Dorffeste.",
+    pricePerDay: 175,
+    deposit: 200,
+    capacity: "für Kinder",
     variants: [
-      { label: "Zelt (6×12m)", price: 200 },
-      { label: "Zelt + Möbel", price: 320 },
-      { label: "Komplett mit Auf-/Abbau", price: 500 },
+      { label: "Eigene Abholung", price: 175 },
+      { label: "Mit Lieferung und Aufbau/Abbau", price: 260 },
     ],
-    features: ["Wasserdicht", "Seitenwände", "Tische & Stühle", "Lichterketten"],
+    features: ["Kindersicher", "Schneller Aufbau", "Wetterfest", "Inkl. Gebläse"],
   },
 ];
 
@@ -99,8 +98,11 @@ export default function Vermietung() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="mb-3 font-serif text-3xl md:text-5xl">Equipment-Vermietung</h1>
             <p className="max-w-xl text-lg text-primary-foreground/80">
-              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zum Partyzelt. Lieferung im Raum
+              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zur Hüpfburg. Lieferung im Raum
               Gera und Umgebung.
+            </p>
+            <p className="mt-3 text-2xl font-bold italic text-accent">
+              „Weniger BLAA, mehr MHH…!"
             </p>
           </motion.div>
         </div>

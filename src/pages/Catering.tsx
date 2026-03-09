@@ -42,22 +42,47 @@ type Package = {
 };
 
 function computePackages(guests: number, occasion: string): Package[] {
-  const base = occasion === "hochzeit" ? 4 : occasion === "seminar" ? 2 : 0;
   return [
     {
-      name: "Basis-Paket", tier: "basis", pricePerPerson: 12 + base,
-      includes: ["Hauptgericht nach Wahl (3 Optionen)", "Beilagen-Buffet", "Softgetränke inklusive", "Geschirr & Besteck", "Anlieferung & Abholung"],
+      name: "Basis-Paket", tier: "basis", pricePerPerson: 12.90,
+      includes: [
+        "Halbe belegte Brötchen & Canapés (2 pro Person)",
+        "Kaffee, Tee & Wasser",
+        "Ab 20 Personen (bei geringerer Anzahl ändert sich der Preis)",
+      ],
     },
     {
-      name: "Komfort-Paket", tier: "komfort", pricePerPerson: 22 + base, highlight: "Beliebteste Wahl",
-      includes: ["Vorspeisen-Auswahl (2 Optionen)", "Hauptgericht (4 Optionen inkl. vegetarisch)", "Dessert-Buffet", "Getränke-Flatrate (Soft + Bier)", "Servicepersonal (1 pro 25 Gäste)", "Tisch-Dekoration Standard", "Geschirr, Besteck & Gläser"],
+      name: "Komfort-Paket", tier: "komfort", pricePerPerson: 35, highlight: "Beliebteste Wahl",
+      includes: [
+        "2 Vorspeisen nach Wahl",
+        "2 Hauptgerichte nach Wahl",
+        "1 Dessert nach Wahl",
+        "Ab 20 Personen (bei geringerer Anzahl ändert sich der Preis)",
+      ],
     },
     {
-      name: "Premium-Paket", tier: "premium", pricePerPerson: 35 + base,
-      includes: ["Sektempfang mit Häppchen", "3-Gänge-Menü oder Premium-Buffet", "Live-Cooking-Station", "Getränke-Flatrate (komplett)", "Servicepersonal (1 pro 15 Gäste)", "Individuelle Tisch-Dekoration", "Premium-Geschirr & Kristallgläser", "Auf-/Abbau inklusive"],
+      name: "Premium-Paket", tier: "premium", pricePerPerson: 0,
+      includes: [
+        "Individuelles Angebot nach Ihren Wünschen",
+        "Sektempfang, 3-Gänge-Menü oder Premium-Buffet",
+        "Live-Cooking, Getränke-Flatrate, Komplett-Service",
+        "Fragen Sie gerne nach – wir erstellen Ihr Angebot",
+      ],
     },
   ];
 }
+
+const komfortAddons = [
+  { label: "Getränkepauschale", price: "12,90 € p.P." },
+  { label: "Tellerpauschale (Geschirr, Gläser, Besteck, Servietten)", price: "2,70 € p.P." },
+];
+
+const zubuchbareOptionen = [
+  { label: "Servicemitarbeiter (1 auf 25 Personen)", price: "28 € / h", note: "Servieren, Ausgabe…" },
+  { label: "Getränkeflatrate", price: "39,90 € p.P.", note: "ab 30 Personen" },
+  { label: "Tischdeko", price: "9,90 € p.P.", note: "ab 20 Personen" },
+  { label: "Live Cooking Station", price: "550 €", note: "ab 30 Personen" },
+];
 
 const tierColors: Record<string, string> = {
   basis: "border-border",
@@ -112,6 +137,9 @@ export default function Catering() {
             <h1 className="mb-4 font-serif text-3xl md:text-5xl lg:text-6xl leading-tight">
               Catering & Events – frisch, regional, persönlich
             </h1>
+            <p className="mb-4 text-2xl font-bold italic text-accent">
+              „Weniger BLAA, mehr MHH…!"
+            </p>
             <p className="mb-8 text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
               Ob Firmenfeier, Hochzeit oder Vereinsfest – wir bringen frische Küche aus
               Gera direkt zu Ihnen. Mit Liebe zubereitet, individuell geplant und immer mit
@@ -376,8 +404,14 @@ export default function Catering() {
                             )}
                             <h4 className="mb-1 font-serif text-lg text-foreground">{pkg.name}</h4>
                             <div className="mb-4 flex items-baseline gap-1">
-                              <span className="text-2xl font-bold text-primary">{pkg.pricePerPerson} €</span>
-                              <span className="text-sm text-muted-foreground">/ Person</span>
+                              {pkg.pricePerPerson > 0 ? (
+                                <>
+                                  <span className="text-2xl font-bold text-primary">{pkg.pricePerPerson.toFixed(2).replace(".", ",")} €</span>
+                                  <span className="text-sm text-muted-foreground">/ Person</span>
+                                </>
+                              ) : (
+                                <span className="text-2xl font-bold text-primary">Auf Anfrage</span>
+                              )}
                             </div>
                             <ul className="space-y-1.5 text-sm">
                               {pkg.includes.map((item) => (
@@ -388,17 +422,45 @@ export default function Catering() {
                               ))}
                             </ul>
                             <Separator className="my-4" />
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Gesamt ca.</span>
-                              <span className="font-bold text-foreground">{total.toLocaleString("de-DE")} €</span>
-                            </div>
+                            {pkg.pricePerPerson > 0 ? (
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">Gesamt ca.</span>
+                                <span className="font-bold text-foreground">{(pkg.pricePerPerson * guests).toLocaleString("de-DE")} €</span>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-center text-muted-foreground">Individuelles Angebot</div>
+                            )}
                             {!fits && <p className="mt-2 text-xs text-accent">Über Ihrem Budget von {budget[0]} €/Person</p>}
                           </label>
                         );
                       })}
                     </RadioGroup>
+                    {/* Komfort Add-ons */}
+                    {selectedTier === "komfort" && (
+                      <div className="mt-6 space-y-4">
+                        <h4 className="font-serif text-lg text-foreground">Im Komfort-Paket zusätzlich buchbar:</h4>
+                        <div className="space-y-2">
+                          {komfortAddons.map((a) => (
+                            <div key={a.label} className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-2 text-sm">
+                              <span>{a.label}</span>
+                              <span className="font-medium text-primary">{a.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <h4 className="font-serif text-lg text-foreground">Zubuchbare Optionen:</h4>
+                        <div className="space-y-2">
+                          {zubuchbareOptionen.map((o) => (
+                            <div key={o.label} className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-2 text-sm">
+                              <span>{o.label} {o.note && <span className="text-xs text-muted-foreground">({o.note})</span>}</span>
+                              <span className="font-medium text-primary">{o.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <p className="mt-6 text-center text-sm text-muted-foreground">
-                      Alle Preise sind Richtwerte. Wir erstellen Ihnen ein individuelles Angebot.
+                      Bei geringerer Personenanzahl ändert sich der Preis. Fragen Sie gerne nach. Gerne erstellen wir Ihr individuelles Angebot.
                     </p>
                   </motion.div>
                 )}
