@@ -42,22 +42,47 @@ type Package = {
 };
 
 function computePackages(guests: number, occasion: string): Package[] {
-  const base = occasion === "hochzeit" ? 4 : occasion === "seminar" ? 2 : 0;
   return [
     {
-      name: "Basis-Paket", tier: "basis", pricePerPerson: 12 + base,
-      includes: ["Hauptgericht nach Wahl (3 Optionen)", "Beilagen-Buffet", "Softgetränke inklusive", "Geschirr & Besteck", "Anlieferung & Abholung"],
+      name: "Basis-Paket", tier: "basis", pricePerPerson: 12.90,
+      includes: [
+        "Halbe belegte Brötchen & Canapés (2 pro Person)",
+        "Kaffee, Tee & Wasser",
+        "Ab 20 Personen (bei geringerer Anzahl ändert sich der Preis)",
+      ],
     },
     {
-      name: "Komfort-Paket", tier: "komfort", pricePerPerson: 22 + base, highlight: "Beliebteste Wahl",
-      includes: ["Vorspeisen-Auswahl (2 Optionen)", "Hauptgericht (4 Optionen inkl. vegetarisch)", "Dessert-Buffet", "Getränke-Flatrate (Soft + Bier)", "Servicepersonal (1 pro 25 Gäste)", "Tisch-Dekoration Standard", "Geschirr, Besteck & Gläser"],
+      name: "Komfort-Paket", tier: "komfort", pricePerPerson: 35, highlight: "Beliebteste Wahl",
+      includes: [
+        "2 Vorspeisen nach Wahl",
+        "2 Hauptgerichte nach Wahl",
+        "1 Dessert nach Wahl",
+        "Ab 20 Personen (bei geringerer Anzahl ändert sich der Preis)",
+      ],
     },
     {
-      name: "Premium-Paket", tier: "premium", pricePerPerson: 35 + base,
-      includes: ["Sektempfang mit Häppchen", "3-Gänge-Menü oder Premium-Buffet", "Live-Cooking-Station", "Getränke-Flatrate (komplett)", "Servicepersonal (1 pro 15 Gäste)", "Individuelle Tisch-Dekoration", "Premium-Geschirr & Kristallgläser", "Auf-/Abbau inklusive"],
+      name: "Premium-Paket", tier: "premium", pricePerPerson: 0,
+      includes: [
+        "Individuelles Angebot nach Ihren Wünschen",
+        "Sektempfang, 3-Gänge-Menü oder Premium-Buffet",
+        "Live-Cooking, Getränke-Flatrate, Komplett-Service",
+        "Fragen Sie gerne nach – wir erstellen Ihr Angebot",
+      ],
     },
   ];
 }
+
+const komfortAddons = [
+  { label: "Getränkepauschale", price: "12,90 € p.P." },
+  { label: "Tellerpauschale (Geschirr, Gläser, Besteck, Servietten)", price: "2,70 € p.P." },
+];
+
+const zubuchbareOptionen = [
+  { label: "Servicemitarbeiter (1 auf 25 Personen)", price: "28 € / h", note: "Servieren, Ausgabe…" },
+  { label: "Getränkeflatrate", price: "39,90 € p.P.", note: "ab 30 Personen" },
+  { label: "Tischdeko", price: "9,90 € p.P.", note: "ab 20 Personen" },
+  { label: "Live Cooking Station", price: "550 €", note: "ab 30 Personen" },
+];
 
 const tierColors: Record<string, string> = {
   basis: "border-border",
