@@ -404,8 +404,14 @@ export default function Catering() {
                             )}
                             <h4 className="mb-1 font-serif text-lg text-foreground">{pkg.name}</h4>
                             <div className="mb-4 flex items-baseline gap-1">
-                              <span className="text-2xl font-bold text-primary">{pkg.pricePerPerson} €</span>
-                              <span className="text-sm text-muted-foreground">/ Person</span>
+                              {pkg.pricePerPerson > 0 ? (
+                                <>
+                                  <span className="text-2xl font-bold text-primary">{pkg.pricePerPerson.toFixed(2).replace(".", ",")} €</span>
+                                  <span className="text-sm text-muted-foreground">/ Person</span>
+                                </>
+                              ) : (
+                                <span className="text-2xl font-bold text-primary">Auf Anfrage</span>
+                              )}
                             </div>
                             <ul className="space-y-1.5 text-sm">
                               {pkg.includes.map((item) => (
@@ -416,9 +422,14 @@ export default function Catering() {
                               ))}
                             </ul>
                             <Separator className="my-4" />
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Gesamt ca.</span>
-                              <span className="font-bold text-foreground">{total.toLocaleString("de-DE")} €</span>
+                            {pkg.pricePerPerson > 0 ? (
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">Gesamt ca.</span>
+                                <span className="font-bold text-foreground">{(pkg.pricePerPerson * guests).toLocaleString("de-DE")} €</span>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-center text-muted-foreground">Individuelles Angebot</div>
+                            )}
                             </div>
                             {!fits && <p className="mt-2 text-xs text-accent">Über Ihrem Budget von {budget[0]} €/Person</p>}
                           </label>
