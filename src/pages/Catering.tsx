@@ -137,6 +137,9 @@ export default function Catering() {
             <h1 className="mb-4 font-serif text-3xl md:text-5xl lg:text-6xl leading-tight">
               Catering & Events – frisch, regional, persönlich
             </h1>
+            <p className="mb-4 text-2xl font-bold italic text-accent">
+              „Weniger BLAA, mehr MHH…!"
+            </p>
             <p className="mb-8 text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
               Ob Firmenfeier, Hochzeit oder Vereinsfest – wir bringen frische Küche aus
               Gera direkt zu Ihnen. Mit Liebe zubereitet, individuell geplant und immer mit
