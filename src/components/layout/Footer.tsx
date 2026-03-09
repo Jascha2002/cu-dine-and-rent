@@ -37,7 +37,7 @@ const footerSections = [{
     label: "Bistro Ophelia",
     path: "/kantinen/theater"
   }, {
-    label: "AWO Gera",
+    label: "Ab Sommer 2026",
     path: "/kantinen/awo"
   }, {
     label: "IHK Gera",
