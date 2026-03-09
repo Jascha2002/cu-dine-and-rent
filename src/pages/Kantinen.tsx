@@ -86,6 +86,12 @@ export default function Kantinen() {
           >
             4 Standorte in Gera – täglich frisch, regional und zu fairem Preis. Einheitspreis: 6,50 € pro Hauptgericht.
           </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="mt-3 text-2xl font-bold italic text-accent"
+          >
+            „Weniger BLAA, mehr MHH…!"
+          </motion.p>
         </div>
       </section>
 
