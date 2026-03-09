@@ -12,7 +12,7 @@ import Layout from "@/components/layout/Layout";
 import feldkuecheImg from "@/assets/rental-feldkueche.jpg";
 import outdoorbarImg from "@/assets/rental-outdoorbar.jpg";
 import grillImg from "@/assets/rental-grill.jpg";
-import zeltImg from "@/assets/rental-zelt.jpg";
+import huepfburgImg from "@/assets/rental-huepfburg.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
