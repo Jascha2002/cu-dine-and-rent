@@ -13,7 +13,7 @@ const navItems = [
       { label: "Alle Standorte", path: "/kantinen" },
       { label: "BZO Gera/Zwötzen", path: "/kantinen/bzo" },
       { label: "Bistro Ophelia", path: "/kantinen/theater" },
-      { label: "AWO Gera", path: "/kantinen/awo" },
+      { label: "Ab Sommer 2026", path: "/kantinen/awo" },
       { label: "IHK Gera", path: "/kantinen/ihk" },
     ],
   },
