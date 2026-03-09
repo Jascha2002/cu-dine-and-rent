@@ -425,8 +425,32 @@ export default function Catering() {
                         );
                       })}
                     </RadioGroup>
+                    {/* Komfort Add-ons */}
+                    {selectedTier === "komfort" && (
+                      <div className="mt-6 space-y-4">
+                        <h4 className="font-serif text-lg text-foreground">Im Komfort-Paket zusätzlich buchbar:</h4>
+                        <div className="space-y-2">
+                          {komfortAddons.map((a) => (
+                            <div key={a.label} className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-2 text-sm">
+                              <span>{a.label}</span>
+                              <span className="font-medium text-primary">{a.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <h4 className="font-serif text-lg text-foreground">Zubuchbare Optionen:</h4>
+                        <div className="space-y-2">
+                          {zubuchbareOptionen.map((o) => (
+                            <div key={o.label} className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-2 text-sm">
+                              <span>{o.label} {o.note && <span className="text-xs text-muted-foreground">({o.note})</span>}</span>
+                              <span className="font-medium text-primary">{o.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <p className="mt-6 text-center text-sm text-muted-foreground">
-                      Alle Preise sind Richtwerte. Wir erstellen Ihnen ein individuelles Angebot.
+                      Bei geringerer Personenanzahl ändert sich der Preis. Fragen Sie gerne nach. Gerne erstellen wir Ihr individuelles Angebot.
                     </p>
                   </motion.div>
                 )}

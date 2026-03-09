@@ -99,10 +99,15 @@ export default function Kantinen() {
         <div className="grid gap-6 md:grid-cols-2">
           {standorte.map((s, i) => (
             <motion.div key={s.id} variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <Card className={`group relative overflow-hidden transition-shadow hover:shadow-lg ${s.highlight ? "border-accent ring-2 ring-accent/20" : "border-border/50"}`}>
+              <Card className={`group relative overflow-hidden transition-shadow hover:shadow-lg ${s.highlight ? "border-accent ring-2 ring-accent/20" : "border-border/50"} ${(s as any).comingSoon ? "opacity-80" : ""}`}>
                 {s.highlight && (
                   <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
                     <Star className="h-3 w-3" /> Vorbestellung
+                  </div>
+                )}
+                {(s as any).comingSoon && (
+                  <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Demnächst
                   </div>
                 )}
                 <CardContent className="p-6">
@@ -153,6 +158,24 @@ export default function Kantinen() {
             </motion.div>
           ))}
         </div>
+
+        {/* CTA für Betreiber */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 rounded-xl border-2 border-accent/30 bg-accent/5 p-8 text-center"
+        >
+          <p className="text-lg font-semibold text-foreground md:text-xl">
+            Sie suchen noch einen Caterer bzw. Betreiber für Ihre Betriebskantine?
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            Melden Sie sich gerne unter{" "}
+            <a href="tel:+493654222241" className="font-semibold text-primary hover:underline">0365 - 4222241</a>{" "}
+            oder gerne auch per Mail{" "}
+            <a href="mailto:info@cu-kantine.de" className="font-semibold text-primary hover:underline">info@cu-kantine.de</a>
+          </p>
+        </motion.div>
       </section>
     </Layout>
   );

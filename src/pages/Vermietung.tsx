@@ -98,8 +98,11 @@ export default function Vermietung() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="mb-3 font-serif text-3xl md:text-5xl">Equipment-Vermietung</h1>
             <p className="max-w-xl text-lg text-primary-foreground/80">
-              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zum Partyzelt. Lieferung im Raum
+              Professionelles Catering-Equipment für Ihr Event – von der Feldküche bis zur Hüpfburg. Lieferung im Raum
               Gera und Umgebung.
+            </p>
+            <p className="mt-3 text-2xl font-bold italic text-accent">
+              „Weniger BLAA, mehr MHH…!"
             </p>
           </motion.div>
         </div>

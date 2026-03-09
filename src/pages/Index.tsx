@@ -94,6 +94,9 @@ export default function Index() {
             <h1 className="mb-6 font-serif text-4xl leading-tight text-primary-foreground md:text-5xl lg:text-6xl">
               Herzlich Willkommen
             </h1>
+            <p className="mb-4 text-2xl font-bold italic text-accent md:text-3xl">
+              „Weniger BLAA, mehr MHH…!"
+            </p>
             <p className="mb-8 text-lg leading-relaxed text-primary-foreground/90 md:text-xl">
               Wir als CU Kantine & Catering möchten mit unserem Team Orte schaffen, an denen gutes, frisches und
               gesundes Essen für alle zugänglich ist. Frische Küche, fairer Preis, kurze Wege und Regionalität –
