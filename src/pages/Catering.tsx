@@ -430,7 +430,6 @@ export default function Catering() {
                             ) : (
                               <div className="text-sm text-center text-muted-foreground">Individuelles Angebot</div>
                             )}
-                            </div>
                             {!fits && <p className="mt-2 text-xs text-accent">Über Ihrem Budget von {budget[0]} €/Person</p>}
                           </label>
                         );
