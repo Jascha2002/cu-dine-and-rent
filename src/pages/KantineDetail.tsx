@@ -467,7 +467,7 @@ export default function KantineDetail() {
                     src={img}
                     alt={`${standort.name} Foto ${index + 1}`}
                     loading="lazy"
-                    className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-72"
+                    className="w-full rounded-xl object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </motion.div>
               ))}
