@@ -171,6 +171,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const deleteMenu = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     // Delete all items first, then the menu
     await supabase.from("daily_menu_items").delete().eq("weekly_menu_id", selectedMenu.id);
