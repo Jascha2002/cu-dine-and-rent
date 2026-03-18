@@ -105,6 +105,8 @@ export default function AdminWeeklyMenus() {
 
   useEffect(() => {
     const check = async () => {
+      initDemoMode();
+      if (isDemoMode()) { setLoading(false); return; }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin");
