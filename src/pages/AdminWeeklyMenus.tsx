@@ -246,6 +246,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const togglePublish = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     const next = !selectedMenu.is_published;
     await supabase.from("weekly_menus").update({ is_published: next }).eq("id", selectedMenu.id);
