@@ -256,6 +256,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const uploadDishImage = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!newImageFile || !newImageName.trim()) return;
     setUploadingImage(true);
     const ext = newImageFile.name.split(".").pop();
