@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,11 @@ export default function AdminMenuUpload() {
 
   useEffect(() => {
     const check = async () => {
+      initDemoMode();
+      if (isDemoMode()) {
+        loadFiles();
+        return;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin");
@@ -42,6 +48,10 @@ export default function AdminMenuUpload() {
   };
 
   const handleUpload = async (type: "speiseplan" | "snackkarte", file: File) => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Kein Upload im Demo-Modus möglich." });
+      return;
+    }
     setUploading(type);
     const path = `bistro-ophelia/${type}`;
     // Remove old file first
@@ -57,6 +67,10 @@ export default function AdminMenuUpload() {
   };
 
   const handleDelete = async (type: "speiseplan" | "snackkarte") => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Kein Löschen im Demo-Modus möglich." });
+      return;
+    }
     await supabase.storage.from("menus").remove([`bistro-ophelia/${type}`]);
     if (type === "speiseplan") setSpeiseplan(null);
     else setSnackkarte(null);

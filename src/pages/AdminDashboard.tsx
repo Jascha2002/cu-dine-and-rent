@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +51,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      initDemoMode();
+      if (isDemoMode()) {
+        setDisplayName("Demo-Ansicht");
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         navigate("/admin");

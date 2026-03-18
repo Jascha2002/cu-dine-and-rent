@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +51,8 @@ export default function AdminJobs() {
 
   useEffect(() => {
     const check = async () => {
+      initDemoMode();
+      if (isDemoMode()) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin");
@@ -78,6 +81,10 @@ export default function AdminJobs() {
   });
 
   const handleSave = async () => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Keine Änderungen im Demo-Modus." });
+      return;
+    }
     if (!form.title || !form.location) {
       toast({ title: "Fehler", description: "Titel und Standort sind Pflichtfelder.", variant: "destructive" });
       return;
@@ -100,6 +107,10 @@ export default function AdminJobs() {
   };
 
   const handleDelete = async (id: string) => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Keine Änderungen im Demo-Modus." });
+      return;
+    }
     const { error } = await supabase.from("jobs").delete().eq("id", id);
     if (!error) {
       toast({ title: "Gelöscht" });

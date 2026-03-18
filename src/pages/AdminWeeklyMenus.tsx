@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,6 +105,8 @@ export default function AdminWeeklyMenus() {
 
   useEffect(() => {
     const check = async () => {
+      initDemoMode();
+      if (isDemoMode()) { setLoading(false); return; }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin");
@@ -168,6 +171,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const deleteMenu = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     // Delete all items first, then the menu
     await supabase.from("daily_menu_items").delete().eq("weekly_menu_id", selectedMenu.id);
@@ -204,6 +208,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const removeItem = async (index: number) => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     const item = menuItems[index];
     if (item.id) await supabase.from("daily_menu_items").delete().eq("id", item.id);
     setMenuItems(prev => prev.filter((_, i) => i !== index));
@@ -211,6 +216,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const saveAll = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     setSaving(true);
     let errors = 0;
@@ -240,6 +246,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const togglePublish = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     const next = !selectedMenu.is_published;
     await supabase.from("weekly_menus").update({ is_published: next }).eq("id", selectedMenu.id);
@@ -249,6 +256,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const uploadDishImage = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!newImageFile || !newImageName.trim()) return;
     setUploadingImage(true);
     const ext = newImageFile.name.split(".").pop();
@@ -263,6 +271,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const deleteDishImage = async (img: DishImage) => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     const path = img.image_url.split("/dish-images/")[1];
     if (path) await supabase.storage.from("dish-images").remove([path]);
     await supabase.from("dish_images").delete().eq("id", img.id);
