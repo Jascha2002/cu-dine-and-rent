@@ -216,6 +216,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const saveAll = async () => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     if (!selectedMenu) return;
     setSaving(true);
     let errors = 0;
