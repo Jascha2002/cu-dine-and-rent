@@ -47,6 +47,51 @@ function getKW() {
   return getISOWeek(new Date());
 }
 
+// New Ophelia images (detail page only)
+import opheliaSaal from "@/assets/kantinen/ophelia-saal.jpg";
+import opheliaInfo from "@/assets/kantinen/ophelia-info.jpg";
+import opheliaRaum1 from "@/assets/kantinen/ophelia-raum1.jpg";
+import opheliaRaum2 from "@/assets/kantinen/ophelia-raum2.jpg";
+import opheliaRaum3 from "@/assets/kantinen/ophelia-raum3.jpg";
+
+function OpheliaCollage() {
+  const images = [
+    { src: opheliaRaum1, alt: "Bistro Ophelia – Speisesaal mit Theaterwand", span: "col-span-2 row-span-2" },
+    { src: opheliaRaum3, alt: "Bistro Ophelia – Gastraum mit Kreidetafel", span: "col-span-1 row-span-1" },
+    { src: opheliaSaal, alt: "Bistro Ophelia – Theater-Panoramawand", span: "col-span-1 row-span-1" },
+    { src: opheliaRaum2, alt: "Bistro Ophelia – Sitzbereich mit Bühnenkulisse", span: "col-span-1 row-span-2" },
+    { src: opheliaInfo, alt: "Bistro Ophelia – Öffnungszeiten & WLAN-Info", span: "col-span-1 row-span-1" },
+  ];
+
+  return (
+    <section className="mb-14" aria-label="Eindrücke aus dem Bistro Ophelia">
+      <div className="mb-5 flex items-center gap-2">
+        <ImageIcon className="h-5 w-5 text-primary" />
+        <h2 className="font-serif text-2xl md:text-3xl">Eindrücke</h2>
+      </div>
+      <div className="grid auto-rows-[180px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-3 md:gap-4">
+        {images.map((img, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.07, duration: 0.4 }}
+            className={`group overflow-hidden rounded-xl ${img.span}`}
+          >
+            <img
+              src={img.src}
+              alt={img.alt}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function BistroOpheliaMenus() {
   const [speiseplanUrl, setSpeiseplanUrl] = useState<string | null>(null);
   const [snackkarteUrl, setSnackkarteUrl] = useState<string | null>(null);
