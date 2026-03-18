@@ -107,6 +107,10 @@ export default function AdminJobs() {
   };
 
   const handleDelete = async (id: string) => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Keine Änderungen im Demo-Modus." });
+      return;
+    }
     const { error } = await supabase.from("jobs").delete().eq("id", id);
     if (!error) {
       toast({ title: "Gelöscht" });

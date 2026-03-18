@@ -66,6 +66,10 @@ export default function AdminMenuUpload() {
   };
 
   const handleDelete = async (type: "speiseplan" | "snackkarte") => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Kein Löschen im Demo-Modus möglich." });
+      return;
+    }
     await supabase.storage.from("menus").remove([`bistro-ophelia/${type}`]);
     if (type === "speiseplan") setSpeiseplan(null);
     else setSnackkarte(null);

@@ -271,6 +271,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const deleteDishImage = async (img: DishImage) => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     const path = img.image_url.split("/dish-images/")[1];
     if (path) await supabase.storage.from("dish-images").remove([path]);
     await supabase.from("dish_images").delete().eq("id", img.id);
