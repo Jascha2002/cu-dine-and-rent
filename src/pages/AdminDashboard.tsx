@@ -51,6 +51,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      initDemoMode();
+      if (isDemoMode()) {
+        setDisplayName("Demo-Ansicht");
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         navigate("/admin");
