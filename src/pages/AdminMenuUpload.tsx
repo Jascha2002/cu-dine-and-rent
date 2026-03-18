@@ -48,8 +48,11 @@ export default function AdminMenuUpload() {
   };
 
   const handleUpload = async (type: "speiseplan" | "snackkarte", file: File) => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Kein Upload im Demo-Modus möglich." });
+      return;
+    }
     setUploading(type);
-    const path = `bistro-ophelia/${type}`;
     // Remove old file first
     await supabase.storage.from("menus").remove([path]);
     const { error } = await supabase.storage.from("menus").upload(path, file, { upsert: true });
