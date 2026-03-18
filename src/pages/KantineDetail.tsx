@@ -475,6 +475,7 @@ export default function KantineDetail() {
           </section>
         )}
 
+        {id === "theater" && <OpheliaCollage />}
         {id === "theater" && <BistroOpheliaMenus />}
         {id === "bzo" && <WeeklyMenuFromDB kantineId="bzo" />}
 
