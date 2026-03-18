@@ -47,7 +47,7 @@ function getKW() {
   return getISOWeek(new Date());
 }
 
-// New Ophelia images (detail page only)
+// Ophelia detail page images
 import opheliaSaal from "@/assets/kantinen/ophelia-saal.jpg";
 import opheliaInfo from "@/assets/kantinen/ophelia-info.jpg";
 import opheliaRaum1 from "@/assets/kantinen/ophelia-raum1.jpg";
