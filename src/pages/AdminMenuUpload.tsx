@@ -19,6 +19,11 @@ export default function AdminMenuUpload() {
 
   useEffect(() => {
     const check = async () => {
+      initDemoMode();
+      if (isDemoMode()) {
+        loadFiles();
+        return;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin");
