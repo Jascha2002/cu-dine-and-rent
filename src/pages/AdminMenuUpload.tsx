@@ -53,6 +53,7 @@ export default function AdminMenuUpload() {
       return;
     }
     setUploading(type);
+    const path = `bistro-ophelia/${type}`;
     // Remove old file first
     await supabase.storage.from("menus").remove([path]);
     const { error } = await supabase.storage.from("menus").upload(path, file, { upsert: true });
