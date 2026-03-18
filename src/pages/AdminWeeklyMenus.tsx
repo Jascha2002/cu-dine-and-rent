@@ -208,6 +208,7 @@ export default function AdminWeeklyMenus() {
   };
 
   const removeItem = async (index: number) => {
+    if (isDemoMode()) { toast.warning("Demo-Modus – keine Änderungen möglich"); return; }
     const item = menuItems[index];
     if (item.id) await supabase.from("daily_menu_items").delete().eq("id", item.id);
     setMenuItems(prev => prev.filter((_, i) => i !== index));
