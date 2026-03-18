@@ -81,6 +81,10 @@ export default function AdminJobs() {
   });
 
   const handleSave = async () => {
+    if (isDemoMode()) {
+      toast({ title: "Demo-Modus", description: "Keine Änderungen im Demo-Modus." });
+      return;
+    }
     if (!form.title || !form.location) {
       toast({ title: "Fehler", description: "Titel und Standort sind Pflichtfelder.", variant: "destructive" });
       return;
