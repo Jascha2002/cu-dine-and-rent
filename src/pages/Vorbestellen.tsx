@@ -175,6 +175,13 @@ export default function Vorbestellen() {
   const canProceed = step === 0 ? cart.length > 0 : step === 1 ? true : step === 2 ? contactValid && agbAccepted : true;
 
   const submitOrder = async () => {
+    if (demoMode) {
+      toast.warning("Demo-Modus – Bestellung wird nicht gespeichert");
+      setOrderConfirmed(true);
+      setPickupNumber("DEMO-42");
+      setStep(3);
+      return;
+    }
     setSubmitting(true);
     try {
       const { data: order, error } = await supabase.from("preorders").insert({
