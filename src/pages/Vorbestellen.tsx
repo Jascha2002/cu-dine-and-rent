@@ -94,6 +94,11 @@ export default function Vorbestellen() {
   const [agbAccepted, setAgbAccepted] = useState(false);
 
   useEffect(() => {
+    initDemoMode();
+  }, []);
+  const demoMode = isDemoMode();
+
+  useEffect(() => {
     const load = async () => {
       const [menusRes, imagesRes] = await Promise.all([
         supabase.from("weekly_menus").select("id, year, week_number").eq("is_published", true).eq("location", "bzo"),
