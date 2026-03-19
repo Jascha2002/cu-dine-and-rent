@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addDays, startOfISOWeek, getISOWeek, getYear, isToday, isBefore } from "date-fns";
 import { de } from "date-fns/locale";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 
 const CATEGORY_LABELS: Record<string, string> = {
   menu1: "Menü 1", menu2: "Menü 2", vegetarisch: "Vegetarisch", suppe: "Tagessuppe", dessert: "Dessert",
