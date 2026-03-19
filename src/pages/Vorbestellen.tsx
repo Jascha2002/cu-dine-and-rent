@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addDays, startOfISOWeek, getISOWeek, getYear, isToday, isBefore } from "date-fns";
 import { de } from "date-fns/locale";
+import { isDemoMode, initDemoMode } from "@/lib/demoMode";
 
 const CATEGORY_LABELS: Record<string, string> = {
   menu1: "Menü 1", menu2: "Menü 2", vegetarisch: "Vegetarisch", suppe: "Tagessuppe", dessert: "Dessert",
@@ -93,6 +94,11 @@ export default function Vorbestellen() {
   const [agbAccepted, setAgbAccepted] = useState(false);
 
   useEffect(() => {
+    initDemoMode();
+  }, []);
+  const demoMode = isDemoMode();
+
+  useEffect(() => {
     const load = async () => {
       const [menusRes, imagesRes] = await Promise.all([
         supabase.from("weekly_menus").select("id, year, week_number").eq("is_published", true).eq("location", "bzo"),
@@ -169,6 +175,13 @@ export default function Vorbestellen() {
   const canProceed = step === 0 ? cart.length > 0 : step === 1 ? true : step === 2 ? contactValid && agbAccepted : true;
 
   const submitOrder = async () => {
+    if (demoMode) {
+      toast.warning("Demo-Modus – Bestellung wird nicht gespeichert");
+      setOrderConfirmed(true);
+      setPickupNumber("DEMO-42");
+      setStep(3);
+      return;
+    }
     setSubmitting(true);
     try {
       const { data: order, error } = await supabase.from("preorders").insert({
@@ -477,6 +490,11 @@ export default function Vorbestellen() {
           Auch telefonisch unter <a href="tel:+493654222241" className="text-primary hover:underline">0365 / 4222241</a>
         </div>
       </div>
+      {demoMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-orange-500 py-2 text-center text-sm text-white">
+          ⚠️ Demo-Modus – Bestellungen werden nicht gespeichert
+        </div>
+      )}
     </Layout>
   );
 }
