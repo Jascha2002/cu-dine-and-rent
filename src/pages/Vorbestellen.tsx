@@ -490,6 +490,11 @@ export default function Vorbestellen() {
           Auch telefonisch unter <a href="tel:+493654222241" className="text-primary hover:underline">0365 / 4222241</a>
         </div>
       </div>
+      {demoMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-orange-500 py-2 text-center text-sm text-white">
+          ⚠️ Demo-Modus – Bestellungen werden nicht gespeichert
+        </div>
+      )}
     </Layout>
   );
 }
