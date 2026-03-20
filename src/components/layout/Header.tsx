@@ -68,7 +68,7 @@ export default function Header() {
               <span>
                 Heute bestellen noch{" "}
                 <strong>
-                  {minutes}:{seconds.toString().padStart(2, "0")}
+                  {hours > 0 ? `${hours} Std ${minutes} Min` : `${minutes} Min`}
                 </strong>
               </span>
             ) : (
