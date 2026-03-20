@@ -37,17 +37,17 @@ function useOrderableStatus() {
   const isWeekday = now.getDay() >= 1 && now.getDay() <= 5;
   const isOrderable = isWeekday && now < cutoff;
   const diff = Math.max(0, cutoff.getTime() - now.getTime());
-  const minutes = Math.floor(diff / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
 
-  return { isOrderable, minutes, seconds, isWeekday };
+  return { isOrderable, hours, minutes, isWeekday };
 }
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
-  const { isOrderable, minutes, seconds } = useOrderableStatus();
+  const { isOrderable, hours, minutes } = useOrderableStatus();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -68,7 +68,7 @@ export default function Header() {
               <span>
                 Heute bestellen noch{" "}
                 <strong>
-                  {minutes}:{seconds.toString().padStart(2, "0")}
+                  {hours > 0 ? `${hours} Std ${minutes} Min` : `${minutes} Min`}
                 </strong>
               </span>
             ) : (
