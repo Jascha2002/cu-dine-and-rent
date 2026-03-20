@@ -47,7 +47,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
-  const { isOrderable, minutes, seconds } = useOrderableStatus();
+  const { isOrderable, hours, minutes } = useOrderableStatus();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
